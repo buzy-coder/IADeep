@@ -39,7 +39,7 @@ Enable the Nvidia runtime as your default runtime on your node. To do this, plea
 
 ### 3.2 Clone Repository
 ```shell
-git clone https://github.com/chenwenyan/iadeep-gpu
+git clone https://github.com/buzy-coder/IADeep
 ```
 - Establish etcd connections with each module in IADeep
 ```shell

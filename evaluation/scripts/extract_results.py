@@ -36,7 +36,7 @@ def extract_results_from_etcd(file_path, client):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--file_path", type=str, default=".", help="The path to save the results")
+    parser.add_argument("--file_path", type=str, default=".", help="Figure number in the paper to plot.")
     args = parser.parse_args()
 
     client = ETCD_WRAPER()
