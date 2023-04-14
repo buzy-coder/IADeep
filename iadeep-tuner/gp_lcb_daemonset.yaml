@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: tuner
+  namespace: iadeep
+spec:
+  selector:
+    matchLabels:
+      name: iadeep-tuner
+  template:
+    metadata:
+      labels:
+        name: iadeep-tuner
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      hostPID: true
+      hostNetwork: true   
+      containers:
+      - name: iadeep-tuner
+        image: 10.119.46.41:30003/library/gp_lcb:1.0
+        imagePullPolicy: Always 
+        workingDir: /workspace
+        command:
+          - "python"
+        args: ["/workspace/tuner.py"]
+        env:
+        - name: AGENT
+          value: "gplcb"
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+      nodeSelector:
+       gpushare: "true"      
+      terminationGracePeriodSeconds: 30

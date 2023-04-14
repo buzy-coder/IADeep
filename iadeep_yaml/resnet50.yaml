@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Pod   
+metadata:
+  generateName: resnet50-
+  namespace: iadeep
+  labels:
+    app: resnet50
+spec:
+  containers:
+    - name: share-gpu-resnet50
+      image: 10.119.46.41:30003/library/iadeep_benchmarks:1.0
+      imagePullPolicy: Always
+      env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name  
+      command:
+        - python
+      args: ["/workspace/workloads/job_agent.py", "--job_name=resnet50", "--batch_size=1024"]
+      resources:
+        requests:
+          cpu: 2
+          memory: 10G
+          gpushare/gpu-mem: 5
+        limits:
+          cpu: 2
+          memory: 10G
+          gpushare/gpu-mem: 5
+      volumeMounts:
+      - name: datapath
+        mountPath: /workspace/dataset/
+        readOnly: True
+      - name: logpath   
+        mountPath: /workspace/workloads/result/
+        readOnly: False
+      - name: cachepath
+        mountPath: /workspace/cache/
+        readOnly: True
+      ports:
+        - containerPort: 80
+  volumes:
+  - name: datapath
+    hostPath:
+      path: /nfs/dataset/
+      type: DirectoryOrCreate
+  - name: logpath
+    hostPath:
+      path: /nfs/logs/
+      type: DirectoryOrCreate
+  - name: cachepath
+    hostPath:
+      path: /nfs/cache
+      type: DirectoryOrCreate
+
+  nodeSelector:
+    # kubernetes.io/hostname: slave12
+    gpushare: "true"
+  restartPolicy: Never
+  schedulerName: iadeep-scheduler

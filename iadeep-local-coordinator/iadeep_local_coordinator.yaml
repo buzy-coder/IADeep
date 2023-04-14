@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: local-coordinator
+  namespace: iadeep
+spec:
+  selector:
+    matchLabels:
+      name: iadeep-local-coordinator
+  template:
+    metadata:
+      labels:
+        name: iadeep-local-coordinator
+    spec:
+      serviceAccountName: local-coordinator
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      hostPID: true
+      hostNetwork: true   
+      containers:
+      - name: iadeep-local-coordinator
+        image: 10.119.46.41:30003/library/iadeep-local-coordinator:1.0
+        imagePullPolicy: Always
+        command: ["iadeep_local_coordinator"]
+        args: [] 
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        env:      
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName 
+        - name: LOG_LEVEL
+          value: debug
+        - name: CSV_FOLDER
+          value: /csv
+        - name: ETCD_KEY
+          value: /etcd_key/
+      nodeSelector:
+        gpushare: "true"
+      # terminationGracePeriodSeconds: 30
