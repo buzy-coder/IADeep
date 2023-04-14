@@ -101,7 +101,7 @@ func PredicateRoute(predicate *scheduler.Predicate) httprouter.Handle {
 	}
 }
 
-//wychen: prioritize the nodes
+//prioritize the nodes
 func PrioritizeRoute(prioritize *scheduler.Prioritize) httprouter.Handle {
 	log.Printf("PrioritizeRoute_ :")
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

@@ -65,8 +65,6 @@ func (m *NvidiaDevicePlugin) Allocate(ctx context.Context,
 		return buildErrResponse(reqs, podReqGPU), nil
 	}
 
-	log.Info("wychen4")
-
 	if log.V(4) {
 		for _, pod := range pods {
 			log.Infof("Pod %s in ns %s request GPU Memory %d with timestamp %v",

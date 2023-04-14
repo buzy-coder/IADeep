@@ -63,7 +63,6 @@ func getGPUIDFromPodAnnotation(pod *v1.Pod) (id int) {
 // get assumed timestamp
 func getAssumeTimeFromPodAnnotation(pod *v1.Pod) (assumeTime uint64) {
 	if assumeTimeStr, ok := pod.ObjectMeta.Annotations[EnvResourceAssumeTime]; ok {
-		log.Info("wychen4")
 		u64, err := strconv.ParseUint(assumeTimeStr, 10, 64)
 		if err != nil {
 			log.Warningf("Failed to parse assume Timestamp %s due to %v", assumeTimeStr, err)
@@ -71,7 +70,6 @@ func getAssumeTimeFromPodAnnotation(pod *v1.Pod) (assumeTime uint64) {
 			assumeTime = u64
 		}
 	}
-	log.Infof("wychen4 assumeTime %v", assumeTime)
 	return assumeTime
 }
 
