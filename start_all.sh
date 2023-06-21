@@ -23,22 +23,24 @@ bash build_image.sh
 cd config
 bash deploy-scheduler.sh
 
+cd ..
+
 cd ../iadeep-tuner
 bash build_image.sh
 kubectl delete -f iadeep-tuner.yaml
 kubectl apply -f .
 
 # monitor GPU on each worker node
-cd ../
-server=("cc232")
-for i in "${server[@]}"
-do
-    echo "Stop monitoring GPU on $i"
-    ssh -T wychen@$i < stop_monitor_gpu.sh
-    echo "Monitoring GPU on $i"
-    ssh -T wychen@$i < monitor_gpu.sh & 
-done
+# cd ../
+# server=("cc232")
+# for i in "${server[@]}"
+# do
+#     echo "Stop monitoring GPU on $i"
+#     ssh -T wychen@$i < stop_monitor_gpu.sh
+#     echo "Monitoring GPU on $i"
+#     ssh -T wychen@$i < monitor_gpu.sh & 
+# done
 
 # submit jobs
-cd microsoft-job-generator
-python3 submit_tasks.py
+# cd ../microsoft-job-generator
+# python3 submit_tasks.py

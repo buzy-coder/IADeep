@@ -9,6 +9,8 @@ from flask import Flask, request
 from ml_agent import Agent
 from iadeep_agent import GPLCB
 
+import logset
+logset.set_logging()
 
 app = Flask(__name__)
 
@@ -24,9 +26,7 @@ def generated_configurations(batchsizes):
     p = product(*loop_val)
     return np.array(list(p))
 
-
 TUNING_RECORDER = {}
-
 
 @app.route('/', methods=['POST'])
 def get_gp():
@@ -76,10 +76,10 @@ def ml_tuning(
         }
 
         result = TUNING_RECORDER[dev_id]["train_batchsizes"][1]
-        print(f"INFO: Device {dev_id} init! Agent type: {agent_type}, Training set size: {training_set_size}")
+        logging.info(f"INFO: Device {dev_id} init! Agent type: {agent_type}, Training set size: {training_set_size}")
     elif TUNING_RECORDER[dev_id]["finished"]:
         del TUNING_RECORDER[dev_id]
-        print(f"INFO: Tuning on device {dev_id} finished!")
+        logging.info(f"INFO: Tuning on device {dev_id} finished!")
         response = {"err": "", "result": []}
         gc.collect()
         return response
@@ -96,7 +96,7 @@ def ml_tuning(
         real_batchsizes.append(input_batchsizes)
 
         result = train_batchsizes[passed_rounds + 1]
-        print(f"INFO: Device {dev_id} training! Current round: {passed_rounds}, Batchsizes: {result}")
+        logging.info(f"Device {dev_id} training! Current round: {passed_rounds}, Batchsizes: {result}")
     else:
         # We have collected enough data on this device, now we are
         # going to estimate PD and check its performance
@@ -108,11 +108,11 @@ def ml_tuning(
         X = dev_recorder["real_batchsizes"]
         Y = dev_recorder["pd_info"]
         agent.train(X, Y)
-        print(f"INFO: Device {dev_id} trained! Agent type: {agent_type}")
+        logging.info(f"Device {dev_id} trained! Agent type: {agent_type}")
         # Select the optimized batchsizes, predict its PD
         result = agent.select()
         TUNING_RECORDER[dev_id]["finished"] = True
-        print(f"INFO: Device {dev_id} final selection: {result}")
+        logging.info(f"Device {dev_id} final selection: {result}")
     TUNING_RECORDER[dev_id]["rounds"] += 1
     response = {"err": "", "result": result}
     gc.collect()
@@ -126,7 +126,7 @@ def gplcb_tuning(dev_id, job_names, init_batchsizes, input_batchsizes, target_in
     #     mem_matrix = np.append(mem_matrix, cubic_regression(*self.cubic_models[job_index], col))
     # mem_sum = mem_matrix.sum(axis=0)
     # x_grid = [x for i, x in enumerate(self.X_grid) if mem_sum[i] <= DEVICE_MEM_LIMITATION]
-    print("x.T is: ", x.T)
+    logging.debug("x.T is: ", x.T)
     mu = np.mean(target_info)
     mu = np.array([mu for _ in range(x.shape[0])])
     sigma = np.array([0.5 for _ in range(x.shape[0])])
@@ -161,7 +161,7 @@ def gplcb_tuning(dev_id, job_names, init_batchsizes, input_batchsizes, target_in
     TUNING_RECORDER[dev_id]['agent'] = agent
 
     if len(agent.T) > 2 and len(agent.T) <= 500:
-        print(agent.T[-1])
+        # logging.debug(agent.T[-1])
         if abs(agent.T[-2] - agent.T[-1]) <= 0.01:
             res_batchsizes = []
             if dev_id in TUNING_RECORDER:
@@ -170,7 +170,6 @@ def gplcb_tuning(dev_id, job_names, init_batchsizes, input_batchsizes, target_in
     response = {"err": '', "result": res_batchsizes}
     gc.collect()
     return response
-
 
 if __name__ == '__main__':
     # PORT = os.environ['PORT']

@@ -1,12 +1,18 @@
 import numpy as np
 import torch
-import logging
+import logging, random
 from estimator import PerformanceDegradation
 from etcdctl import etcd_wraper
 
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger(__name__)
-LOG.setLevel(logging.INFO)
+import logset
+logset.set_logging()
+
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    np.random.seed(seed)
+    random.seed(seed)
 
 def check_if_tuning(pod_name):
     tuning = etcd_wraper.get(pod_name, 'tuning')
@@ -34,7 +40,7 @@ def get_grad_sqr(optimizer):
             # print("param.grad is: ", param.grad)   
     preconditioner = get_preconditioner(optimizer)
     grads_normsqr = normsqr_groups(grads, preconditioner)
-    print("grad_sqr is: ", float(np.sum(grads_normsqr)))
+    logging.debug(f'grad_sqr is: {float(np.sum(grads_normsqr))}')
     return float(np.sum(grads_normsqr))
 
 def get_preconditioner(optimizer):
@@ -96,7 +102,7 @@ class TrainRecorder:
         """        
         minibatch_time = minibatch_time_end - minibatch_time_start
         if check_if_tuning(self.pod_name):
-            print("tuning!")
+            logging.debug("tuning!")
             self.minibatch_times.append(minibatch_time)
             if len(self.minibatch_times) == 1: 
                 self.tuning_start_time = minibatch_time_start
@@ -121,11 +127,11 @@ class TrainRecorder:
                     self.big_grad_sqr
                 )
                 pd_val = PD.get_performance_degradation()
-                print("pd is: ", pd_val)
+                logging.debug("pd is: ", pd_val)
                 reset_tuning(self.pod_name)
                 tuning_end_time = minibatch_time_end
                 tuning_time = tuning_end_time - self.tuning_start_time
-                print("Tuning cost: ", tuning_time)
+                logging.debug("Tuning cost: ", tuning_time)
                 self.tuning_cost += tuning_time
                 etcd_wraper.put(self.pod_name, "tuning_consumption", self.tuning_cost)
                 return False

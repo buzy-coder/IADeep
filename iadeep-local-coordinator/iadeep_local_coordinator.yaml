@@ -43,4 +43,4 @@ spec:
           value: /etcd_key/
       nodeSelector:
         gpushare: "true"
-      # terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: 1

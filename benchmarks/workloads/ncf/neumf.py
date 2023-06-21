@@ -1,12 +1,10 @@
-import os
+import os, logging
 import time
 import argparse
 import numpy as np
-import random
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.backends.cudnn as cudnn
 from torch.utils.data import DataLoader
 
 import argparse
@@ -16,16 +14,11 @@ import evaluate
 import data_utils
 import sys
 sys.path.append("/workspace/workloads/")
-import utils
+
+import utils, logset
 from etcdctl import etcd_wraper
 
-def setup_seed(seed):
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    np.random.seed(seed)
-    random.seed(seed)
-    cudnn.benchmark = True
+logset.set_logging()
 
 def train_neumf(args, model, device, train_loader, test_loader, optimizer, kwargs):
     if config.model == 'NeuMF-pre':
@@ -41,7 +34,6 @@ def train_neumf(args, model, device, train_loader, test_loader, optimizer, kwarg
     factor_num = 32
     num_layers = 3
     dropout = 0.0
-    
     
     model = model.NCF(user_num, item_num, factor_num, num_layers, 
                             dropout, config.model, GMF_model, MLP_model)
@@ -60,7 +52,7 @@ def train_neumf(args, model, device, train_loader, test_loader, optimizer, kwarg
         tuned_batch_size = etcd_wraper.get(args.pod_name, "tuned_batch_size")
         if tuned_batch_size is not None and tuned_batch_size != args.batch_size:
             kwargs.update({"batch_size": tuned_batch_size}, )
-            print(f"Epoch {epoch} kwargs are: {kwargs}")
+            logging.debug(f"Epoch {epoch} kwargs are: {kwargs}")
             train_loader = DataLoader(train_dataset, **kwargs)
 
         model.train() # Enable dropout (if have).
@@ -89,9 +81,9 @@ def train_neumf(args, model, device, train_loader, test_loader, optimizer, kwarg
         HR, NDCG = evaluate.metrics(model, test_loader, top_k)
 
         elapsed_time = time.time() - start_time
-        print("The time elapse of epoch {:03d}".format(epoch) + " is: " + 
+        logging.info("The time elapse of epoch {:03d}".format(epoch) + " is: " + 
                 time.strftime("%H: %M: %S", time.gmtime(elapsed_time)))
-        print("HR: {:.3f}\tNDCG: {:.3f}".format(np.mean(HR), np.mean(NDCG)))    
+        logging.info("HR: {:.3f}\tNDCG: {:.3f}".format(np.mean(HR), np.mean(NDCG)))    
                                         
         if HR >= args.valid_acc:
             count += 1
@@ -137,7 +129,7 @@ if __name__ == "__main__":
 
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
-    print("device is: ", device)
+    logging.debug("device is: %s", str(device))
 
     kwargs = {'batch_size': args.batch_size}
     if use_cuda:
@@ -183,14 +175,14 @@ if __name__ == "__main__":
     # scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma) 
 
     try:
-        setup_seed(0)
+        utils.setup_seed(0)
         train_neumf(args, model, device, train_loader, test_loader, optimizer, kwargs)
     except RuntimeError as exception:
         # if "Out of memory" in str(exception):
-        print("Warning: out of memory due to a big batchsize!")
+        logging.info("Warning: out of memory due to a big batchsize!")
         torch.cuda.empty_cache()
         args.batch_size = int(args.batch_size/2)
-        print("args.batch_size is: ", args.batch_size)
+        logging.debug("args.batch_size is: ", args.batch_size)
         train_neumf(args, model, device, train_loader, test_loader, optimizer, kwargs)
         torch.cuda.empty_cache()
 

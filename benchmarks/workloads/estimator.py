@@ -7,9 +7,9 @@ import logging
 from etcdctl import ETCD_WRAPER
 etcd_wraper = ETCD_WRAPER()
 
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger(__name__)
-LOG.setLevel(logging.INFO)
+import logset
+logset.set_logging()
+
 
 def print_exc(function):
     """
@@ -69,13 +69,13 @@ class GradientNoiseScale(object):
     def get_grad_sqr(self):
         small_grad_sqr = self.small_grad_sqr
         big_grad_sqr = self.big_grad_sqr
-        print("1/(self._big_batchsize - self._small_batchsize) is: ", 1/(self._big_batchsize - self._small_batchsize))
-        print("self._big_batchsize * big_grad_sqr - self._small_batchsize * small_grad_sqr is: ", self._big_batchsize * big_grad_sqr - self._small_batchsize * small_grad_sqr)
+        logging.debug("1/(self._big_batchsize - self._small_batchsize) is: ", 1/(self._big_batchsize - self._small_batchsize))
+        logging.debug("self._big_batchsize * big_grad_sqr - self._small_batchsize * small_grad_sqr is: ", self._big_batchsize * big_grad_sqr - self._small_batchsize * small_grad_sqr)
         
         grad_sqr = 1/(self._big_batchsize - self._small_batchsize) * \
             (self._big_batchsize * big_grad_sqr - self._small_batchsize * small_grad_sqr)
         grad_sqr = self.sqr_avg(abs(grad_sqr))    
-        print("grad_sqr is: ", grad_sqr)
+        logging.debug("grad_sqr is: ", grad_sqr)
         return grad_sqr    
 
     # Estimate of the trace of the covariance
@@ -85,7 +85,7 @@ class GradientNoiseScale(object):
         # grad_var = 1/(1/self._small_batchsize - 1/self._big_batchsize) * (self._small_grad_sqr - self._big_grad_sqr + 10)
         grad_var = 1/(1/self._small_batchsize - 1/self._big_batchsize) * (small_grad_sqr - big_grad_sqr)
         grad_var = self.var_avg(grad_var)
-        print("grad_var is: ", grad_var)
+        logging.debug("grad_var is: ", grad_var)
         return grad_var
 
     def get_gns(self):
@@ -102,13 +102,13 @@ class PerformanceDegradation(object):
         self.performance_degradation = 0.0
         self.m_0 = etcd_wraper.get(pod_name, "init_batch_size")
         self.m = etcd_wraper.get(pod_name, "tuned_batch_size")
-        print("m_0 is: ", self.m_0)
-        print("m is: ", self.m)
+        logging.debug("m_0 is: ", self.m_0)
+        logging.debug("m is: ", self.m)
 
     def get_efficiency(self):
         GNS = GradientNoiseScale(self.pod_name, self.optimizer, self.small_grad_sqr, self.big_grad_sqr)
 
-        print("GNS.gns is: ", GNS.get_gns())
+        logging.debug("GNS.gns is: ", GNS.get_gns())
         etcd_wraper.put(self.pod_name, "gns", str(GNS.get_gns()))
         efficiency = (GNS.get_gns() + self.m_0)/(GNS.get_gns() + self.m)
         return efficiency
@@ -117,10 +117,10 @@ class PerformanceDegradation(object):
     def get_performance_degradation(self):
         t_co = self.get_avg_minibatch_time("minibatch_time")
         t_m0 = self.get_avg_minibatch_time("mini_batch_time_m0")
-        print(f"t_co is:{t_co}, t_m0 is {t_m0}, m0 is {self.m_0}, m is {self.m}")
-        print("efficiency is: ", self.get_efficiency())
+        logging.debug(f"t_co is:{t_co}, t_m0 is {t_m0}, m0 is {self.m_0}, m is {self.m}")
+        logging.debug("efficiency is: ", self.get_efficiency())
         res = (t_co/t_m0)*(self.m_0/self.m)*self.get_efficiency()
-        print("pd is: ", res)
+        logging.debug("pd is: ", res)
         etcd_wraper.put(self.pod_name, "pd", str(res))
         return res 
 

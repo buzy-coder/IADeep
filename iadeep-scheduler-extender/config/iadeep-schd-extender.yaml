@@ -133,7 +133,7 @@ spec:
   - port: 12345
     name: http
     targetPort: 12345
-    nodePort: 32766
+    nodePort: 32761
   selector:
     # select app=ingress-nginx pods
     app: gpushare

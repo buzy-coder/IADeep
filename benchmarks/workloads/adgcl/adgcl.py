@@ -3,9 +3,7 @@ import os
 import sys
 import argparse
 import logging
-import random
 import warnings
-import numpy as np
 import torch
 from sklearn.svm import LinearSVC, SVC
 from torch_geometric.data import DataLoader
@@ -26,10 +24,11 @@ from unsupervised.view_learner import ViewLearner
 
 sys.path.append("/workspace/workloads/")
 from estimator import PerformanceDegradation
-import utils
+import utils, logset
 from etcdctl import etcd_wraper
 warnings.filterwarnings("ignore")
 
+logset.set_logging()
 
 class DataLoader(torch.utils.data.DataLoader):
     r"""Data loader which merges data objects from a
@@ -118,15 +117,6 @@ class DenseDataLoader(torch.utils.data.DataLoader):
             dataset, batch_size, shuffle, collate_fn=dense_collate, **kwargs)
 
 
-
-logging.getLogger().setLevel(logging.INFO)
-def setup_seed(seed):
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    np.random.seed(seed)
-    random.seed(seed)
-
 def run(args, model, device, dataloader, optimizer, kwargs):
 
     view_learner = ViewLearner(TUEncoder(num_dataset_features=1, emb_dim=args.emb_dim, num_gc_layers=args.num_gc_layers, drop_ratio=args.drop_ratio, pooling_type=args.pooling_type),
@@ -161,7 +151,7 @@ def run(args, model, device, dataloader, optimizer, kwargs):
         tuned_batch_size = etcd_wraper.get(args.pod_name, "tuned_batch_size")
         if tuned_batch_size is not None and tuned_batch_size != args.batch_size:
             kwargs.update({"batch_size": tuned_batch_size}, )
-            print(f"Epoch {epoch} kwargs are: {kwargs}")
+            logging.debug(f"Epoch {epoch} kwargs are: {kwargs}")
             dataloader = DataLoader(dataset, **kwargs)
 
         model_loss_all = 0
@@ -269,7 +259,7 @@ def run(args, model, device, dataloader, optimizer, kwargs):
             train_curve.append(train_score)
             valid_curve.append(val_score)
             test_curve.append(test_score)
-        print("val_acc is : {:.2f}".format(val_score))
+        logging.info("val_acc is : {:.2f}".format(val_score))
         
         if val_score >= args.valid_acc:
             count += 1
@@ -346,7 +336,7 @@ if __name__ == "__main__":
 
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
-    print("device is: ", device)
+    logging.debug("device is: %s", str(device))
 
     kwargs = {'batch_size': args.batch_size}
     if use_cuda:
@@ -360,7 +350,6 @@ if __name__ == "__main__":
     logging.info("Using Device: %s" % device)
     logging.info("Seed: %d" % 0)
     logging.info(args)
-    setup_seed(0)
 
     evaluator = TUEvaluator()
     my_transforms = Compose([initialize_node_features, initialize_edge_weight, set_tu_dataset_y_shape])
@@ -375,13 +364,13 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(model.parameters(), lr=args.model_lr)
 
     try:
-        setup_seed(0)
+        utils.setup_seed(0)
         run(args, model, device, dataloader, optimizer, kwargs)
     except RuntimeError as exception:
         # if "Out of memory" in str(exception):
-        print("Warning: out of memory due to a big batchsize!")
+        logging.info("Warning: out of memory due to a big batchsize!")
         torch.cuda.empty_cache()
         args.batch_size = int(args.batch_size/2)
-        print("args.batch_size is: ", args.batch_size)
+        logging.debug("args.batch_size is: ", args.batch_size)
         run(args, model, device, dataloader, optimizer, kwargs)
         torch.cuda.empty_cache()

@@ -11,7 +11,7 @@ spec:
   - command:
     - kube-scheduler
     - --bind-address=127.0.0.1
-    - --config=/etc/kubernetes/scheduler-config.yaml
+    - --config=/etc/kubernetes/iadeep-scheduler-policy-config.yaml
     - --authentication-kubeconfig=/etc/kubernetes/scheduler.conf
     - --authorization-kubeconfig=/etc/kubernetes/scheduler.conf
     - --secure-port=10258

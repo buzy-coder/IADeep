@@ -1,10 +1,12 @@
 import time, random, subprocess, argparse
 import pandas as pd
 from time import sleep
-from etcdctl import ETCD_WRAPER
+from etcdctl import ETCD_WRAPER, ROOT_PATH
 from typing import Dict
 
-YAML_FOLDER = "~/iadeep-gpu/iadeep_yaml"
+random.seed(0)
+
+YAML_FOLDER = f"{ROOT_PATH}iadeep_yaml"
 
 def task_selection(task_cdf: Dict[str, float]):
     coin = random.random()

@@ -1,22 +1,15 @@
 #coding=utf-8
-import re, math, time, random, argparse, torch
-import numpy as np
+import re, math, time, logging, argparse, torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from torchtext.legacy.data import Field, BPTTIterator
 from torchtext.legacy.datasets import WikiText2
 
-import utils
+import utils, logset
 from etcdctl import etcd_wraper
 
-def setup_seed(seed):
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    np.random.seed(seed)
-    random.seed(seed)
-
+logset.set_logging()
 
 class RNNModel(nn.Module):
     def __init__(self, ntoken, ninp, nhid, nlayers, dropout=0.5, lnorm=False):
@@ -69,7 +62,7 @@ def evaluate(data_iter):
         output_flat = output.view(-1, ntokens)
         total_loss += criterion(output_flat, targets.view(-1)).item() # Cumulative loss. 
          
-    print('len:', len(data_iter)) 
+    logging.debug(f'len: {len(data_iter)}') 
     return total_loss / len(data_iter) # returns mean loss.
 
 # Train function.
@@ -95,11 +88,11 @@ def train(args, model, device, train_iter, optimizer, epoch, recorder: utils.Tra
         total_loss += loss.item()        
         if batch % args.log_interval == 0 and batch > 0:
             cur_loss = total_loss / args.log_interval
-            print("| epoch {:3d} | {:5d}/{:5d} batches | loss {:5.2f} | ppl {:8.2f}".format(
+            logging.info("| epoch {:3d} | {:5d}/{:5d} batches | loss {:5.2f} | ppl {:8.2f}".format(
                 epoch, batch, len(train_iter), cur_loss, math.exp(cur_loss)))
             total_loss = 0
     cur_loss = total_loss / (batch+1)
-    print("| epoch {:3d} | {:5d}/{:5d} batches | loss {:5.2f} | ppl {:8.2f}".format(
+    logging.info("| epoch {:3d} | {:5d}/{:5d} batches | loss {:5.2f} | ppl {:8.2f}".format(
         epoch, batch+1, len(train_iter), cur_loss, math.exp(cur_loss)))
 
 # Sequence generation function.
@@ -135,7 +128,7 @@ def train_lstm(args, model, device, train_iter, valid_iter, test_iter, optimizer
         tuned_batch_size = etcd_wraper.get(args.pod_name, "tuned_batch_size")
         if tuned_batch_size is not None and tuned_batch_size != args.batch_size:
             kwargs.update({"batch_size": tuned_batch_size}, )
-            print(f"Epoch {epoch} kwargs are: {kwargs}")
+            logging.debug(f"Epoch {epoch} kwargs are: {kwargs}")
             train_iter, valid_iter, test_iter = BPTTIterator.splits((train_dataset, valid_dataset, test_dataset),
                                                             bptt_len=args.sequence_length, **kwargs)
 
@@ -144,10 +137,10 @@ def train_lstm(args, model, device, train_iter, valid_iter, test_iter, optimizer
         
         # scheduler.step()  
 
-        print("| end of epoch {:3d} | valid loss {:5.2f} | valid ppl {:8.2f}".format(
+        logging.info("| end of epoch {:3d} | valid loss {:5.2f} | valid ppl {:8.2f}".format(
             epoch, val_loss, math.exp(val_loss)))
 
-        print("-" * 89)    
+        logging.info("-" * 89)    
         
         valid_ppl = math.exp(val_loss)
         if valid_ppl <= args.valid_acc:
@@ -196,7 +189,7 @@ if __name__ == "__main__":
     # print("||||", use_cuda)
     # device = torch.device("cuda" if use_cuda else "cpu")
     device = torch.device("cuda")
-    print("device is: ", device)
+    logging.debug("device is: %s", str(device))
 
     kwargs = {'batch_size': args.batch_size, 'shuffle': True}
 
@@ -231,13 +224,13 @@ if __name__ == "__main__":
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma) 
 
     try:
-        setup_seed(0)
+        utils.setup_seed(0)
         train_lstm(args, model, device, train_iter, valid_iter, test_iter, optimizer, kwargs)
     except RuntimeError as exception:
         # if "Out of memory" in str(exception):
-        print("Warning: out of memory due to a big batchsize!")
+        logging.info("Warning: out of memory due to a big batchsize!")
         torch.cuda.empty_cache()
         args.batch_size = int(args.batch_size/2)
-        print("args.batch_size is: ", args.batch_size)
+        logging.debug("args.batch_size is: ", args.batch_size)
         train_lstm(args, model, device, train_iter, valid_iter, test_iter, optimizer, kwargs)
         torch.cuda.empty_cache()

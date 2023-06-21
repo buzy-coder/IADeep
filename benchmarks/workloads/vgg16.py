@@ -1,22 +1,16 @@
 import time
 import argparse
-import random
+import logging
 import torch
-import numpy as np
 from torch import optim
 from torch.utils.data import DataLoader
 from torchvision import transforms, datasets, models
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import StepLR
-import utils
-from etcdctl import etcd_wraper
 
-def setup_seed(seed):
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    np.random.seed(seed)
-    random.seed(seed)
+import utils, logset
+from etcdctl import etcd_wraper
+logset.set_logging()
 
 def train(args, model, device, train_loader, optimizer, epoch, recorder: utils.TrainRecorder):
     model.train()
@@ -40,15 +34,13 @@ def train(args, model, device, train_loader, optimizer, epoch, recorder: utils.T
             break
      
         if batch_idx % args.log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.6f}%)]\tTrain Loss: {:.6f}'.format(
+            logging.info('Train Epoch: {} [{}/{} ({:.6f}%)]\tTrain Loss: {:.6f}'.format(
             epoch, batch_idx*args.batch_size, len(train_loader.dataset),
             100.0 * batch_idx / len(train_loader), loss.item() / args.batch_size)) 
 
     train_loss /= len(train_loader.dataset)
     accuracy = 100. * train_correct / len(train_loader.dataset)
-    print('\nTrain Epoch: {} Train set: Average loss: {:.6f}, Accuracy: {}/{} ({:.6f}%)\n'.format(epoch,
-        train_loss, train_correct, len(train_loader.dataset),
-        accuracy))       
+    logging.info('Train Epoch: {} Train set: Average loss: {:.6f}, Accuracy: {}/{} ({:.6f}%)\n'.format(epoch, train_loss, train_correct, len(train_loader.dataset), accuracy))       
 
 def test(model, device, test_loader):
     model.eval()
@@ -65,7 +57,7 @@ def test(model, device, test_loader):
     test_loss /= len(test_loader.dataset)
     
     accuracy = 100. * correct / len(test_loader.dataset)
-    print('\nTest set: Average loss: {:.6f}, Accuracy: {}/{} ({:.6f}%)\n'.format(
+    logging.info('Test set: Average loss: {:.6f}, Accuracy: {}/{} ({:.6f}%)\n'.format(
         test_loss, correct, len(test_loader.dataset),
         accuracy))     
     return accuracy      
@@ -78,7 +70,7 @@ def train_vgg16(args, model, device, train_loader, test_loader, optimizer, kwarg
         tuned_batch_size = etcd_wraper.get(args.pod_name, "tuned_batch_size")
         if tuned_batch_size is not None and tuned_batch_size != args.batch_size:
             kwargs.update({"batch_size": tuned_batch_size})
-            print(f"Epoch {epoch} kwargs are: {kwargs}")
+            logging.info(f"Epoch {epoch} kwargs are: {kwargs}")
             train_loader = DataLoader(train_dataset, **kwargs)
 
         train(args, model, device, train_loader, optimizer, epoch, recorder)
@@ -127,7 +119,7 @@ if __name__ == "__main__":
 
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
-    print("device is: ", device)
+    logging.debug("device is: %s", str(device))
 
     kwargs = {'batch_size': args.batch_size}
     if use_cuda:
@@ -152,13 +144,13 @@ if __name__ == "__main__":
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma) 
 
     try:
-        setup_seed(0)
+        utils.setup_seed(0)
         train_vgg16(args, model, device, train_loader, test_loader, optimizer, kwargs)
     except RuntimeError as exception:
         if "Out of memory" in str(exception):
-            print("Warning: out of memory due to a big batchsize!")
+            logging.info("Warning: out of memory due to a big batchsize!")
             torch.cuda.empty_cache()
             args.batch_size = int(args.batch_size/2)
-            print("args.batch_size is: ", args.batch_size)
+            logging.debug("args.batch_size is: ", args.batch_size)
             train_vgg16(args, model, device, train_loader, test_loader, optimizer, kwargs)
             torch.cuda.empty_cache()

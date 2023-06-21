@@ -1,8 +1,10 @@
 import os
-import time
+import time, logging
 import argparse
 import subprocess
 from etcdctl import ETCD_WRAPER
+import logset
+logset.set_logging()
 
 os.environ['GRPC_ENABLE_FORK_SUPPORT']="1"
 os.environ['GRPC_POLL_STRATEGY']="poll"
@@ -12,7 +14,7 @@ def run(args, pod_name):
     init_batchsize = args.batch_size
     job_name = args.job_name
     command = f"python /workspace/workloads/{job_name}.py --batch_size {init_batchsize} --pod_name {pod_name}"
-    print(command)
+    logging.debug("command is %s", command)
     subprocess.run(command, shell=True, executable='bash')
 
 if __name__ == "__main__":
@@ -34,4 +36,4 @@ if __name__ == "__main__":
     etcd_wraper.put(pod_name, 'end_time', end)
     jct = end-start        
     etcd_wraper.put(pod_name, "jct", jct)
-    print(f'{pod_name} jct is: {jct}.') 
+    logging.info(f'{pod_name} jct is: {jct}.') 

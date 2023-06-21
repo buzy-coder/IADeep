@@ -9,7 +9,7 @@ class ETCD_WRAPER:
         api_server_ip = os.getenv("ETCD_SERVER_IP")
         self.api_server_ip = api_server_ip
         self.domain = "/gpushare"
-        pem_prefix= "../../iadeep-gpu/benchmarks/etcd_key/"
+        pem_prefix= "benchmarks/etcd_key/"
         # version_prefix = "/v3"
         self.client = etcd3.client(host=self.api_server_ip, port=os.getenv("ETCD_PORT"), cert_cert=pem_prefix+"healthcheck-client.crt",cert_key=pem_prefix+"healthcheck-client.key",ca_cert=pem_prefix+"ca.crt")
 

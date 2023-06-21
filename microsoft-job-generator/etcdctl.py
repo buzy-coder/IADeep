@@ -4,12 +4,14 @@ import os
 os.environ["ETCD_SERVER_IP"] = "10.119.46.42"
 os.environ["ETCD_PORT"] = "2379"
 
+ROOT_PATH = "/home/wychen/workspace/sc23/IADeep/"
+
 class ETCD_WRAPER:
     def __init__(self):
         api_server_ip = os.getenv("ETCD_SERVER_IP")
         self.api_server_ip = api_server_ip
         self.domain = "/gpushare"
-        pem_prefix= "../iadeep-gpu/benchmarks/etcd_key/"
+        pem_prefix = f"{ROOT_PATH}benchmarks/etcd_key/"
         # version_prefix = "/v3"
         self.client = etcd3.client(host=self.api_server_ip, port=os.getenv("ETCD_PORT"), cert_cert=pem_prefix+"healthcheck-client.crt",cert_key=pem_prefix+"healthcheck-client.key",ca_cert=pem_prefix+"ca.crt")
 

@@ -3,7 +3,7 @@ kind: KubeSchedulerConfiguration
 profiles:
   - schedulerName: iadeep-scheduler
 extenders:
-- urlPrefix: http://127.0.0.1:32766/gpushare-scheduler
+- urlPrefix: http://127.0.0.1:32761/gpushare-scheduler
   filterVerb: filter
   prioritizeVerb: priorities
   weight: 10
