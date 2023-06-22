@@ -30,7 +30,7 @@ def submit_task(task):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='manual to this script')
-    parser.add_argument('--scheduler', type=str, default="iadeep",
+    parser.add_argument('--scheduler', type=str, default="IADeep",
                         help='Used scheduler of experiment')
     parser.add_argument('--fitter', type=str, default="gpucb",
                         help='Used fitting method of experiment')

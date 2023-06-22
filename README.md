@@ -81,8 +81,8 @@ bash build_image.sh
 
 - deploy DaemonSet
 ```shell
-kubectl apply -f iadeep_local_coordinator_role.yaml
-kubectl apply -f iadeep_local_coordinator.yaml
+kubectl apply -f iadeep-local-coordinator-rbac.yaml
+kubectl apply -f iadeep-local-coordinator.yaml
 ```
 
 ### 3.6 Deploy Tuner 
@@ -94,7 +94,7 @@ bash build_image.sh
 
 - deploy DaemonSet
 ```shell
-kubectl apply -f gp_lcb_daemonset.yaml
+kubectl apply -f iadeep-tuner-ds.yaml
 ```
 
 ## 4. Submit Tasks
@@ -112,5 +112,10 @@ bash build_image.sh
 - submit deep learning tasks
 ```shell
 cd microsoft-job-generartor
-python3 submit_tasks.py
+python3 submit_tasks.py --scale=1
+```
+
+## 5. Use a script to deploy the system and run DL jobs
+```
+sudo bash start_all.sh IADEEP
 ```
