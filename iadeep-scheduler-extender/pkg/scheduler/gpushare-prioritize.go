@@ -5,6 +5,7 @@ import (
 	"gpushare-scheduler-extender/pkg/methods"
 	"gpushare-scheduler-extender/pkg/utils"
 	"log"
+	"os"
 	"strconv"
 
 	v1 "k8s.io/api/core/v1"
@@ -21,29 +22,34 @@ func NewGPUsharePrioritize(clientset *kubernetes.Clientset, c *cache.SchedulerCa
 			node, _ := c.GetNode(nodeName)
 			sumGPUMemUtil := 0
 			GPUs := utils.GetGPUStatusInNode(node)
-			hasNonTuningGPU := false
-			for idx, status := range GPUs {
-				log.Printf("debug: %v GPU %v usage %v", nodeName, idx, status.MemUtil)
-				sumGPUMemUtil += int(status.MemUtil)
-				if !methods.GetTuningStatusFromEtcd(nodeName, strconv.Itoa(idx)) {
-					hasNonTuningGPU = true
+			var score int
+			if os.Getenv("SCHEDULER") == "IADEEP" {
+				hasNonTuningGPU := false
+				for idx, status := range GPUs {
+					log.Printf("debug: %v GPU %v usage %v", nodeName, idx, status.MemUtil)
+					sumGPUMemUtil += int(status.MemUtil)
+					if !methods.GetTuningStatusFromEtcd(nodeName, strconv.Itoa(idx)) {
+						hasNonTuningGPU = true
+					}
+				}
+				avgGPUMemUtil := sumGPUMemUtil / len(GPUs)
+				log.Printf("debug: %v avg GPU usage %v", nodeName, avgGPUMemUtil)
+
+				if hasNonTuningGPU {
+					score = 100 - avgGPUMemUtil
+				} else {
+					score = 0
+				}
+			} else {
+				for _, status := range GPUs {
+					score += 100 - int(status.MemUtil)
 				}
 			}
-			avgGPUMemUtil := sumGPUMemUtil / len(GPUs)
-			log.Printf("debug: %v avg GPU usage %v", nodeName, avgGPUMemUtil)
-
-			var score int
-			if hasNonTuningGPU {
-				score = 100 - avgGPUMemUtil
-			} else {
-				score = 0
-			}
-
 			hostPriority = schedulerapi.HostPriority{
 				Host:  nodeName,
 				Score: score,
 			}
-			log.Println(hostPriority)
+			log.Printf("hostPriority is: %+v", hostPriority)
 			return hostPriority, nil
 		},
 		cache: c,

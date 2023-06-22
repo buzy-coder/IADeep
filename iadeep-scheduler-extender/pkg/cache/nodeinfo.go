@@ -225,8 +225,8 @@ func (n *NodeInfo) Assume(pod *v1.Pod) (allocatable bool) {
 
 }
 
-//  Judge if base job should tune by get remaining epoch from etcd
-//  remaing jct is 3, return false
+// Judge if base job should tune by get remaining epoch from etcd
+// remaing jct is 3, return false
 func FilterBaseJobWillComplete(base_pods []*v1.Pod) []*v1.Pod {
 	var new_base_pods []*v1.Pod
 	epoch_to_complete := 7.0
@@ -310,7 +310,8 @@ func (n *NodeInfo) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod) (err e
 		}
 	}
 	// 4. send data to tuner
-	if err == nil && os.Getenv("ORG_CODE") != "true" {
+	if err == nil && os.Getenv("SCHEDULER") != "ANTMAN" {
+		log.Printf("Using scheduler IADeep")
 		var job_names []string
 		var pod_names []string
 		var batchsizes []int
@@ -417,7 +418,7 @@ func (n *NodeInfo) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod) (err e
 
 	}
 	log.Printf("info: Allocate() ----End to allocate GPU for gpu mem for pod %s in ns %s----", pod.Name, pod.Namespace)
-	// 记录调度时间
+	// record scheduling time
 	end_time := time.Now().UnixMilli()
 	schedule_time := strconv.Itoa(int(end_time - start_time))
 	if err == nil {
@@ -426,8 +427,8 @@ func (n *NodeInfo) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod) (err e
 			log.Printf("Put pod %v schedule_time in etcd err due to %+v", newPod.Name, err)
 		}
 	}
-
-	// 记录结束！
+	log.Printf("schedule_time is: %+v", schedule_time)
+	// record end!
 	return err
 }
 
@@ -566,13 +567,13 @@ func (n *NodeInfo) allocateGPUID(clientset *kubernetes.Clientset, pod *v1.Pod) (
 				memCapacity := gpustatus[devID].MemCapacity
 				devIsTuning := methods.GetTuningStatusFromEtcd(n.Name, strconv.Itoa(devID))
 				log.Printf("Device %+v on node %+v has tuning status %+v", devID, n.Name, devIsTuning)
-				if memCapacity > 12 && !devIsTuning && ok { //for 3090 GPUs and not Tuning GPUs
-					// if memCapacity > 12 && ok { //for 3090 GPUs and not Tuning GPUs
-
+				// if memCapacity > 12 && !devIsTuning && ok { //for 3090 GPUs and not Tuning GPUs
+				// if memCapacity > 12 && ok { //for 3090 GPUs and not Tuning GPUs
+				if !devIsTuning && ok { //for not Tuning GPUs
 					if availableGPU >= reqGPU {
 						if candidateDevID == -1 || candidateGPUMemory > availableGPU {
-							if os.Getenv("ORG_CODE") == "true" {
-								log.Printf("return ORG_CODE %d", devID)
+							if os.Getenv("SCHEDULER") == "ANTMAN" {
+								log.Printf("return devID %d on node %s", devID, n.Name)
 								return devID, true
 							} else {
 								if memCapacity-memUsed == memCapacity { //return idle GPU

@@ -127,11 +127,11 @@ class TrainRecorder:
                     self.big_grad_sqr
                 )
                 pd_val = PD.get_performance_degradation()
-                logging.debug("pd is: ", pd_val)
+                logging.debug(f"pd is: {pd_val}")
                 reset_tuning(self.pod_name)
                 tuning_end_time = minibatch_time_end
                 tuning_time = tuning_end_time - self.tuning_start_time
-                logging.debug("Tuning cost: ", tuning_time)
+                logging.debug(f"Tuning cost: {tuning_time}")
                 self.tuning_cost += tuning_time
                 etcd_wraper.put(self.pod_name, "tuning_consumption", self.tuning_cost)
                 return False

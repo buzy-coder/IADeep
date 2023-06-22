@@ -30,13 +30,13 @@ spec:
       volumeMounts:
       - name: datapath
         mountPath: /workspace/dataset/
-        readOnly: True
+        readOnly: False
       - name: logpath   
         mountPath: /workspace/workloads/result/
         readOnly: False
       - name: cachepath
         mountPath: /root/.cache/
-        readOnly: True
+        readOnly: False
       ports:
         - containerPort: 80
   volumes:
@@ -54,7 +54,6 @@ spec:
       type: DirectoryOrCreate
 
   nodeSelector:
-    kubernetes.io/hostname: slave3
     gpushare: "true"
   restartPolicy: Never
   schedulerName: iadeep-scheduler

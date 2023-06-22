@@ -39,8 +39,10 @@ if __name__ == "__main__":
     opt = parser.parse_args()
     etcd_wraper = ETCD_WRAPER() 
     # Construct task cdf
-    tasks = ["vgg16", "resnet50", "squeezenet", "neumf", "lstm", "adgcl", "yolov5", "bert"]
-    prob = [0.14, 0.14, 0.14, 0.12, 0.12, 0.12, 0.1, 0.1]
+    # tasks = ["vgg16", "resnet50", "squeezenet", "neumf", "lstm", "adgcl", "yolov5", "bert"]
+    # prob = [0.14, 0.14, 0.14, 0.12, 0.12, 0.12, 0.1, 0.1]
+    tasks = ["vgg16", "resnet50", "squeezenet", "neumf", "lstm", "yolov5", "bert"]
+    prob = [0.14, 0.14, 0.14, 0.12, 0.12, 0.1, 0.1]
     prob = [x / sum(prob) for x in prob]
     cdf, cum = [], 0
     for p in prob:
@@ -57,7 +59,8 @@ if __name__ == "__main__":
     submit_intervals = [x / 1000 * opt.scale for x in submit_intervals]
     # Start to submit tasks
     now = time.strftime("%Y-%m-%d-%H_%M_%S",time.localtime(time.time())) 
-    csv_name = f"{opt.fitter}_{opt.scheduler}_{opt.scale}_{now}.csv"
+    # csv_name = f"{opt.fitter}_{opt.scheduler}_{opt.scale}_{now}.csv"
+    csv_name = f"{opt.scheduler}_{opt.scale}_{now}.csv"
     submissions = []
     for interval in submit_intervals:
         task = task_selection(task_cdf)

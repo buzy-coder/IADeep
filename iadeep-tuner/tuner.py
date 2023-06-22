@@ -6,6 +6,8 @@ import numpy as np
 from typing import List
 from itertools import product
 from flask import Flask, request
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
 from ml_agent import Agent
 from iadeep_agent import GPLCB
 
@@ -30,7 +32,6 @@ TUNING_RECORDER = {}
 
 @app.route('/', methods=['POST'])
 def get_gp():
-    max_iterations = 50
     jresp = request.get_json()
     job_names = jresp['Job_names']
     pod_names = jresp['Pod_names']
@@ -120,13 +121,22 @@ def ml_tuning(
 
 def gplcb_tuning(dev_id, job_names, init_batchsizes, input_batchsizes, target_info):
     x = generated_configurations(init_batchsizes)
+    logging.info(f"Tuning job names are {job_names}")
+    logging.info(f"Init batchsizes are {init_batchsizes}")
+    logging.info(f"Input batchsizes are {input_batchsizes}")
+    logging.info(f"Target info are {target_info}")
     # todo filter x
     # mem_matrix = np.array()
     # for job_index, col in enumerate(np.array(self.X_grid).T):
     #     mem_matrix = np.append(mem_matrix, cubic_regression(*self.cubic_models[job_index], col))
     # mem_sum = mem_matrix.sum(axis=0)
     # x_grid = [x for i, x in enumerate(self.X_grid) if mem_sum[i] <= DEVICE_MEM_LIMITATION]
-    logging.debug("x.T is: ", x.T)
+
+    # logging.debug(f"x.T is: {x.T}")
+    target_info_2d = np.array(target_info).reshape(-1, 1)
+    scaler = MinMaxScaler().fit(target_info_2d)
+    target_info = scaler.transform(target_info_2d)
+    target_info = target_info.flatten()
     mu = np.mean(target_info)
     mu = np.array([mu for _ in range(x.shape[0])])
     sigma = np.array([0.5 for _ in range(x.shape[0])])
@@ -159,15 +169,25 @@ def gplcb_tuning(dev_id, job_names, init_batchsizes, input_batchsizes, target_in
     res_batchsizes = x[index]
 
     TUNING_RECORDER[dev_id]['agent'] = agent
-
-    if len(agent.T) > 2 and len(agent.T) <= 500:
-        # logging.debug(agent.T[-1])
-        if abs(agent.T[-2] - agent.T[-1]) <= 0.01:
-            res_batchsizes = []
+    max_iterations = 50
+    for iteration in range(max_iterations):
+        index = agent.learn(1)
+        res_batchsizes = x[index]
+        logging.info(f"Device {dev_id} iteration {iteration}: {agent.T[-1]}")
+        if len(agent.T) > 2 and abs(agent.T[-2] - agent.T[-1]) <= 0.01:
             if dev_id in TUNING_RECORDER:
                 del TUNING_RECORDER[dev_id]
+            break
+    # if len(agent.T) > 2 and len(agent.T) <= 500:
+    #     # logging.debug(agent.T[-1])
+    #     if abs(agent.T[-2] - agent.T[-1]) <= 0.01:
+    #         res_batchsizes = []
+    #         if dev_id in TUNING_RECORDER:
+    #             del TUNING_RECORDER[dev_id]
 
     response = {"err": '', "result": res_batchsizes}
+    logging.info(f"final iteration: {iteration}")
+    logging.info(f"Device {dev_id} final selection: {res_batchsizes}")
     gc.collect()
     return response
 

@@ -9,5 +9,6 @@ RUN pip install -r requirement.txt
 RUN pip install scikit-learn
 RUN pip install flask
 RUN pip install more-itertools
+ENV LOG_LEVEL=DEBUG
 
 # CMD ["python", "tuner.py"]

@@ -1,2 +1,2 @@
-nvidia-smi dmon -i 1,2,3,7 -d 1 -c 7200 -s pucvmet > "${hostname}_gpu_usage.log" &
+nvidia-smi dmon -i 0 -d 1 -c 7200 -s pucvmet > "${hostname}_gpu_usage.log" &
 nvidia-smi --query-gpu=timestamp,pci.bus_id,utilization.gpu,utilization.memory --format=csv -l 1 --format=csv -l 1 > "${hostname}_gpu_utilization.csv" &

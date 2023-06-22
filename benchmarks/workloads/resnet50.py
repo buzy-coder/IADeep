@@ -153,6 +153,6 @@ if __name__ == "__main__":
         logging.info("Warning: out of memory due to a big batchsize!")
         torch.cuda.empty_cache()
         args.batch_size = int(args.batch_size/2)
-        logging.debug("args.batch_size is: ", args.batch_size)
+        logging.debug(f"args.batch_size is: {args.batch_size}")
         train_resnet50(args, model, device, train_loader, test_loader, optimizer, kwargs)
         torch.cuda.empty_cache()
