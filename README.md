@@ -47,6 +47,10 @@ git clone https://github.com/buzy-coder/IADeep
 ETCD_SERVER_IP=172.168.0.1
 ETCD_PORT=2379
 ```
+- In addition, label each GPU node with gpushare=true
+```
+kubectl label node worker-0 gpushare=true
+```
 
 ### 3.3 Deploy GPU Scheduler Extender in Master Node
 - build image
