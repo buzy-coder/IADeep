@@ -775,8 +775,8 @@ func DeletePodContentByEtcd(pod_name, key string) (bool, error) {
 
 func CreateEtcdClient() (*clientv3.Client, error) {
 	pem_prefix := os.Getenv("ETCD_KEY")
-	cert_cert := pem_prefix + "apiserver-etcd-client.crt"
-	cert_key := pem_prefix + "apiserver-etcd-client.key"
+	cert_cert := pem_prefix + "healthcheck-client.crt"
+	cert_key := pem_prefix + "healthcheck-client.key"
 	ca_cert := pem_prefix + "ca.crt"
 	cert, err := tls.LoadX509KeyPair(cert_cert, cert_key)
 	if err != nil {

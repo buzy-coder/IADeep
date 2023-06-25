@@ -2,7 +2,10 @@ FROM golang:1.17.8-stretch as builder
 
 WORKDIR /go/src/iadeep_local_coordinator
 COPY . .
-# RUN go mod vendor
+# download libraries
+# RUN go mod init iadeep-local-coordinator
+RUN go mod vendor
+RUN go mod tidy
 RUN go build -o /usr/bin/iadeep_local_coordinator cmd/*.go
 
 FROM ubuntu  
