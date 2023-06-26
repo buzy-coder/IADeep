@@ -14,7 +14,6 @@ Now there is a middleware-level GPU multiplexing solution on native Kubernetes: 
 
 ## 2. Prerequisites
 - Kubernetes 1.18+
-- Golang 1.17+
 - NVIDIA drivers ~= 470.57
 - Nvidia-docker version > 2.0 (see how to [install](https://github.com/NVIDIA/nvidia-docker) and it's [prerequisites](https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)#prerequisites))
 - Docker configured with NVIDIA as [default runtime](https://github.com/NVIDIA/nvidia-docker/wiki/Advanced-topics#default-runtime).
@@ -47,8 +46,9 @@ git clone https://github.com/buzy-coder/IADeep
 ETCD_SERVER_IP=172.168.0.1
 ETCD_PORT=2379
 ```
-- In addition, label each GPU node with gpushare=true
+- In addition, create namespace iadeep and label each GPU node with gpushare=true
 ```
+kubectl create ns iadeep
 kubectl label node worker-0 gpushare=true
 ```
 
