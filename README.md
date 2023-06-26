@@ -116,10 +116,10 @@ bash build_image.sh
 - submit deep learning tasks
 ```shell
 cd microsoft-job-generartor
-python3 submit_tasks.py --scale=1
+python3 submit_tasks.py --scale=1 --jobs=100
 ```
 
-## 5. Use a script to deploy the system and run DL jobs
+## 5. Use a script to deploy the system and run DL jobs (Optimal)
 ```
 sudo bash start_all.sh IADEEP
 ```
