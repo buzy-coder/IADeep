@@ -36,10 +36,10 @@ if __name__ == "__main__":
                         help='Used fitting method of experiment')
     parser.add_argument('--scale', type=float, default=1.0,
                         help='Scaling of submition rate')
-    parser.add_argument('--njobs', type=int, default=50,
+    parser.add_argument('--jobs', type=int, default=50,
                         help='Number of jobs to submit')
     opt = parser.parse_args()
-    njobs = opt.njobs
+    jobs = opt.jobs
     etcd_wraper = ETCD_WRAPER() 
     # Construct task cdf
     # tasks = ["vgg16", "resnet50", "squeezenet", "neumf", "lstm", "adgcl", "yolov5", "bert"]
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         cum += p
     task_cdf = dict(zip(tasks, cdf))
     # Get and modify task submission rate
-    init_rate = pd.read_csv("microsoft_trace_task_rate.csv", nrows=njobs)
+    init_rate = pd.read_csv("microsoft_trace_task_rate.csv", nrows=jobs)
     submit_times = init_rate["modified_time"].tolist()
     prev_submit_time, submit_intervals = 0, []
     for submit_time in submit_times:
