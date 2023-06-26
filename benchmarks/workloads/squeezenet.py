@@ -97,7 +97,7 @@ if __name__ == "__main__":
                         help='learning rate (default: 1.0)')  
     parser.add_argument('--gamma', type=float, default=0.7, metavar='M',
                         help='Learning rate step gamma (default: 0.7)')
-    parser.add_argument('--epochs', type=int, default=300, metavar='N',
+    parser.add_argument('--epochs', type=int, default=50, metavar='N',
                         help='number of epochs to train (default: 14)') 
     parser.add_argument('--dry-run', action='store_true', default=False,
                         help='quickly check a single pass')

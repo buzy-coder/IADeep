@@ -25,7 +25,7 @@ parser.add_argument('--pretrained_model', type=str, default=None, help='pretrain
 
 parser.add_argument("--batch_size", type=int, dest="batch_size", default=8, help="Mini-batch size")
 parser.add_argument("--lr", type=float, dest="lr", default=5e-5, help="Base Learning Rate")
-parser.add_argument("--epochs", type=int, dest="epochs", default=100, help="Number of iterations")
+parser.add_argument("--epochs", type=int, dest="epochs", default=30, help="Number of iterations")
 parser.add_argument('--visualize', type=bool, default=True, help='if open tensorboardX')
 parser.add_argument('--warmup_steps', default=2000, type=int, required=False, help='warm up steps')
 parser.add_argument('--max_grad_norm', default=1, type=float, required=False, help='max grad norm')
