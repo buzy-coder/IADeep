@@ -119,7 +119,7 @@ cd microsoft-job-generartor
 python3 submit_tasks.py --scale=1 --jobs=100
 ```
 
-## 5. Use a script to deploy the system and run DL jobs (Optimal)
+## 5. Use a script to deploy the system and run DL jobs (Optional)
 ```
 sudo bash start_all.sh IADEEP
 ```
