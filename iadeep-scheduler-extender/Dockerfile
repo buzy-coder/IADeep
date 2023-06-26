@@ -4,8 +4,8 @@ WORKDIR /go/src/gpushare-scheduler-extender
 COPY . .
 
 # RUN go mod init iadeep-scheduler-extender
-RUN go mod vendor
 RUN go mod tidy
+RUN go mod vendor
 RUN go build -o /go/bin/gpushare-sche-extender cmd/*.go
 
 FROM ubuntu

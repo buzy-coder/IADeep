@@ -4,8 +4,8 @@ WORKDIR /go/src/gpushare-device-plugin
 COPY . .
 
 # RUN go mod init gpushare-device-plugin
-RUN go mod vendor
 RUN go mod tidy
+RUN go mod vendor
 
 RUN export CGO_LDFLAGS_ALLOW='-Wl,--unresolved-symbols=ignore-in-object-files' && \
     go build -ldflags="-s -w" -o /go/bin/gpushare-device-plugin cmd/nvidia/main.go

@@ -4,8 +4,8 @@ WORKDIR /go/src/iadeep_local_coordinator
 COPY . .
 # download libraries
 # RUN go mod init iadeep-local-coordinator
+RUN go mod tidy -go=1.16 && go mod tidy -go=1.17
 RUN go mod vendor
-RUN go mod tidy
 RUN go build -o /usr/bin/iadeep_local_coordinator cmd/*.go
 
 FROM ubuntu  
