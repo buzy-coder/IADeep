@@ -25,6 +25,8 @@ unzip wikitext-2-v1.zip
 
 # SQuAD2
 wget -c https://rajpurkar.github.io/SQuAD-explorer/dataset/train-v2.0.json
+mkdir -p squad-2/SQuAD2
+mv train-v2.0.json squad-2/SQuAD2/
 
 # COCO
 wget -c http://images.cocodataset.org/zips/train2017.zip
