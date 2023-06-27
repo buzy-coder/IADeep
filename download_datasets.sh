@@ -24,9 +24,10 @@ wget -c https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip
 unzip wikitext-2-v1.zip
 
 # SQuAD2
-wget -c https://rajpurkar.github.io/SQuAD-explorer/dataset/train-v2.0.json
+# wget -c https://rajpurkar.github.io/SQuAD-explorer/dataset/train-v2.0.json
+git clone https://github.com/chrischute/squad.git
 mkdir -p squad-2/SQuAD2
-mv train-v2.0.json squad-2/SQuAD2/
+mv squad/data/* squad-2/SQuAD2/
 
 # COCO
 wget -c http://images.cocodataset.org/zips/train2017.zip
