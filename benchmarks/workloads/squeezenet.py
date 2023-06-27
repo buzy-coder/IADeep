@@ -133,8 +133,8 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_dataset, **kwargs)
     test_loader = DataLoader(test_dataset, **kwargs)
 
-    model = models.squeezenet1_1(pretrained=False)
-    model.load_state_dict(torch.load('/workspace/cache/squeezenet.pth'))
+    model = models.squeezenet1_1(pretrained=True)
+    # model.load_state_dict(torch.load('/workspace/cache/squeezenet.pth'))
     model = model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     

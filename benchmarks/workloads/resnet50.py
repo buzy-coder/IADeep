@@ -136,8 +136,8 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_dataset, **kwargs)
     test_loader = DataLoader(test_dataset, **kwargs)
 
-    model = models.resnet50(pretrained=False)
-    model.load_state_dict(torch.load('/workspace/cache/resnet50.pth'))
+    model = models.resnet50(pretrained=True)
+    # model.load_state_dict(torch.load('/workspace/cache/resnet50.pth'))
     model = model.to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)

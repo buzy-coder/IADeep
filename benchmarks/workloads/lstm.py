@@ -5,6 +5,7 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from torchtext.legacy.data import Field, BPTTIterator
 from torchtext.legacy.datasets import WikiText2
+import torchtext.vocab as vocab
 
 import utils, logset
 from etcdctl import etcd_wraper
@@ -201,7 +202,9 @@ if __name__ == "__main__":
     # Splitting WikiText2 dataset to train, validation and test sets.
     train_dataset, valid_dataset, test_dataset = WikiText2.splits(TEXT, root=args.data_path)
     # Building of vocabulary for embeddings.
-    TEXT.build_vocab(train_dataset, vectors="glove.6B.200d")
+    # TEXT.build_vocab(train_dataset, vectors="glove.6B.200d")
+    glove = vocab.Vectors("/workspace/.vector_cache/glove.6B.200d.txt")
+    TEXT.build_vocab(train_dataset, vectors=glove)
     # Vocabulary check. Each symbol assigned an id.
     # print("Vocabulary length: ", len(list(TEXT.vocab.stoi.items())))
     # print(list(TEXT.vocab.stoi.items())[:30])
