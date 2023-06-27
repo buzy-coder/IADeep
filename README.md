@@ -25,7 +25,7 @@ This guide assumes that the NVIDIA drivers and nvidia-docker2 have been installe
 ```shell
 sudo apt-get install nvidia-container-runtime
 ```
-Enable the Nvidia runtime as your default runtime on your node. To do this, please edit the docker daemon config file which is usually present at /etc/docker/daemon.json:
+Enable the Nvidia runtime as your default runtime on your worker node. To do this, please edit the docker daemon config file which is usually present at /etc/docker/daemon.json:
 ```shell
 {
     "default-runtime": "nvidia",
@@ -37,17 +37,11 @@ Enable the Nvidia runtime as your default runtime on your node. To do this, plea
     }
 }
 ```
+Then restart the docker daemon:
+```shell
+sudo systemctl restart docker
+```
 
-### 3.2 Clone Repository
-```shell
-git clone https://github.com/buzy-coder/IADeep
-```
-- Establish etcd connections with each module in IADeep
-```shell
-# modify etcd_server_ip and etcd_port environment variables in benchmarks/Dockerfile, iadeep-local-coordinator/Dockerfile, iadeep-scheduler-extender/Dockerfile and microsoft-job-generator/etcdctl.py  to your own etcd ip address and port, for example:
-ETCD_SERVER_IP=172.168.0.1
-ETCD_PORT=2379
-```
 - In addition, create namespace iadeep and label each GPU node with gpushare=true
 ```
 kubectl create ns iadeep
@@ -60,6 +54,17 @@ kubectl label node ${worker4-name} gpushare=true
 - Importantly, edit leader-elect=true in /etc/kubernetes/manifests/kube-scheduler.yaml to leader-elect=false to make iadeep-scheduler work.
 ```shell
 - --leader-elect=false
+```
+
+### 3.2 Clone Repository
+```shell
+git clone https://github.com/buzy-coder/IADeep
+```
+- Establish etcd connections with each module in IADeep
+```shell
+# modify etcd_server_ip and etcd_port environment variables in benchmarks/Dockerfile, iadeep-local-coordinator/Dockerfile, iadeep-scheduler-extender/Dockerfile and microsoft-job-generator/etcdctl.py  to your own etcd ip address and port, for example:
+ETCD_SERVER_IP=172.168.0.1
+ETCD_PORT=2379
 ```
 
 ### 3.3 Deploy GPU Scheduler Extender in Master Node
