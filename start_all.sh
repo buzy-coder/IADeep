@@ -35,6 +35,8 @@ bash build_image.sh
 cd config
 bash deploy-scheduler.sh
 
+sleep 5
+
 # monitor GPU on each worker node
 # cd ../
 # server=("cc232")
@@ -46,6 +48,6 @@ bash deploy-scheduler.sh
 #     ssh -T wychen@$i < monitor_gpu.sh & 
 # done
 
-# submit jobs
-# cd ../microsoft-job-generator
-# python3 submit_tasks.py
+submit jobs
+cd ../microsoft-job-generator
+python3 submit_tasks.py --jobs=300
