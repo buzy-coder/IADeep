@@ -17,7 +17,7 @@ ADD etcd_key /etcd_key
 
 COPY --from=build /go/bin/gpushare-sche-extender /usr/bin/gpushare-sche-extender
 # scheduler: IADEEP, ANTMAN, KERNELEST
-ENV SCHEDULER=IADEEP
+ENV SCHEDULER=KERNELEST
 ENV ETCD_SERVER_IP="10.119.46.42"
 ENV ETCD_PORT=2379
 ENV ENABLE_OPTIMIZER=true

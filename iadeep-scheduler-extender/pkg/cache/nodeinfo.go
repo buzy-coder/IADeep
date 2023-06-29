@@ -310,7 +310,7 @@ func (n *NodeInfo) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod) (err e
 		}
 	}
 	// 4. send data to tuner
-	if err == nil && os.Getenv("SCHEDULER") != "ANTMAN" {
+	if err == nil && os.Getenv("SCHEDULER") == "IADEEP" {
 		log.Printf("Using scheduler IADeep")
 		var job_names []string
 		var pod_names []string
@@ -513,8 +513,10 @@ func (n *NodeInfo) updatePodOnDev(pod *v1.Pod, devId int) bool {
 
 			log.Printf("nodeName is: %+v", n.Name)
 			log.Printf("json.Marshal(pod_names) are: %+v", string(pod_names_str))
-			methods.PutPodContentByEtcd(n.Name, strconv.Itoa(devId), string(pod_names_str))
-			log.Printf("put end.")
+			if os.Getenv("SCHEDULER") == "IADEEP" {
+				methods.PutPodContentByEtcd(n.Name, strconv.Itoa(devId), string(pod_names_str))
+				log.Printf("put end.")
+			}
 		}
 	}
 	return found
@@ -580,7 +582,6 @@ func (n *NodeInfo) allocateGPUID(clientset *kubernetes.Clientset, pod *v1.Pod) (
 									return devID, true
 								}
 								if gpuUtil < utils.GPUUtilThreshold && memUtil < utils.MemUtiliThreshold {
-									// if gpuUtil < 101 && memUtil < 101 { //改了！！！！
 									// some processes on GPU devID
 									interference_value := 0.0
 									if len(pods) > 0 {
@@ -593,10 +594,11 @@ func (n *NodeInfo) allocateGPUID(clientset *kubernetes.Clientset, pod *v1.Pod) (
 										log.Printf("debug base_job: %v", jobs)
 										log.Printf("debug new_job: %v", new_job_name)
 										total_records := methods.ReadRecord()
-										// interference_value = methods.GetInterferenceScore(jobs, new_job_name)
-										// interference_value, _ = methods.GetInterferenceScoreFromCsv_(jobs, new_job_name)
-										interference_value, _ = methods.GetInterferenceFromFile(jobs, new_job_name, total_records)
-
+										if os.Getenv("SCHEDULER") == "IADEEP" {
+											interference_value, _ = methods.GetInterferenceFromFile(jobs, new_job_name, total_records)
+										} else if os.Getenv("SCHEDULER") == "KERNELEST" {
+											interference_value, _ = methods.GetInterferenceScoreFromUtilCsv(jobs, new_job_name)
+										}
 										log.Printf("interference on devID %v is: %v", devID, interference_value)
 									}
 									interferences = append(interferences, Interference{

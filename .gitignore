@@ -2,6 +2,7 @@
 *.bin
 IADEEP*.csv
 ANTMAN*.csv
+KERNELEST*.csv
 *.crt 
 *.key
 

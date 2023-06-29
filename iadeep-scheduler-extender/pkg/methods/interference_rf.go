@@ -167,3 +167,87 @@ func WriteRecord(var1 []interface{}, interference float64) {
 	}
 
 }
+
+// get interference from util csv
+
+func GetInterferenceScoreFromUtilCsv(base_jobs []string, new_job string) (float64, error) {
+
+	csvFile, err := os.Open("/csv/interference_util.csv")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer csvFile.Close()
+
+	csvDf := dataframe.ReadCSV(csvFile)
+
+	jobs := CreateJobKV(base_jobs, new_job)
+	for k, v := range jobs {
+		num := strconv.FormatInt(int64(v), 2)
+		fil := csvDf.Filter(
+			dataframe.F{Colname: k, Comparator: series.Eq, Comparando: v},
+			dataframe.F{Colname: k + "_num", Comparator: series.Eq, Comparando: num},
+		)
+		csvDf = fil
+	}
+	if csvDf.Nrow() > 0 {
+		return csvDf.Elem(0, 16).Float(), nil
+	} else {
+		pred_interference, _ := PredByRFRegressor(CreatePredUtilRecord(jobs))
+		return pred_interference, nil
+	}
+}
+
+func CreatePredUtilRecord(jobs map[string]int) []interface{} {
+	Y := make([]interface{}, 16)
+	columns := []string{"vgg16", "vgg19", "squeezenet", "googlenet", "alexnet", "lstm", "neumf", "adgcl"}
+	// for i, column := range columns {
+	// 	if _, ok := jobs[column]; !ok {
+	// 		Y[i] = 0
+	// 		Y[i+1] = 0
+	// 	} else {
+	// 		Y[i] = jobs_util[i].SM_util
+	// 		Y[i+1] = jobs_util[i].Mem_util
+	// 	}
+	// }
+	for i, column := range columns {
+		if _, ok := jobs[column]; !ok {
+			Y[2*i] = 0
+			Y[2*i+1] = 0
+		} else {
+			if column == "vgg16" {
+				Y[2*i] = 53.44736842105264
+				Y[2*i+1] = 26.730263157894736
+			}
+			if column == "vgg19" {
+				Y[2*i] = 60.84324324324324
+				Y[2*i+1] = 34.69189189189189
+			}
+			if column == "squeezenet" {
+				Y[2*i] = 10.24271844660194
+				Y[2*i+1] = 2.9805825242718447
+			}
+			if column == "googlenet" {
+				Y[2*i] = 24.29545454545455
+				Y[2*i+1] = 8.227272727272727
+			}
+			if column == "alexnet" {
+				Y[2*i] = 7.531732418524871
+				Y[2*i+1] = 2.497427101200686
+			}
+			if column == "lstm" {
+				Y[2*i] = 57.08552631578947
+				Y[2*i+1] = 28.697368421052627
+			}
+			if column == "neumf" {
+				Y[2*i] = 3.425287356321839
+				Y[2*i+1] = 0.5057471264367817
+			}
+			if column == "adgcl" {
+				Y[2*i] = 10.933070866141732
+				Y[2*i+1] = 3.8385826771653533
+			}
+		}
+	}
+	log.Printf("Y is %+v", Y)
+	return Y
+}

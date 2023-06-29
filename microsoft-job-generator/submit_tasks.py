@@ -44,8 +44,10 @@ if __name__ == "__main__":
     # Construct task cdf
     # tasks = ["vgg16", "resnet50", "squeezenet", "neumf", "lstm", "adgcl", "yolov5", "bert"]
     # prob = [0.14, 0.14, 0.14, 0.12, 0.12, 0.12, 0.1, 0.1]
-    tasks = ["vgg16", "resnet50", "squeezenet", "neumf", "lstm", "yolov5", "bert"]
-    prob = [0.14, 0.14, 0.14, 0.12, 0.12, 0.1, 0.1]
+    # tasks = ["vgg16", "resnet50", "squeezenet", "neumf", "lstm", "yolov5", "bert"]
+    # prob = [0.14, 0.14, 0.14, 0.12, 0.12, 0.1, 0.1]
+    tasks = ["vgg16", "resnet50", "squeezenet", "neumf", "lstm"]
+    prob = [0.14, 0.14, 0.14, 0.12, 0.12]
     prob = [x / sum(prob) for x in prob]
     cdf, cum = [], 0
     for p in prob:

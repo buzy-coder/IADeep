@@ -14,6 +14,8 @@ kubectl delete -f iadeep-device-plugin/iadeep-device-plugin-rbac.yaml
 sleep 10
 bash del-etcd.sh
 
+cur_path="$PWD"
+echo "current path is: " $cur_path
 # Description: start all components of IADeep
 cd iadeep-device-plugin
 bash build_image.sh
@@ -21,16 +23,17 @@ sleep 10
 kubectl apply -f .
 
 if [ "$scheduler" == "IADEEP" ]; then
-    cd ../iadeep-local-coordinator
+    echo $scheduler
+    cd $cur_path/iadeep-local-coordinator
     bash build_image.sh
     kubectl apply -f . 
 
-    cd ../iadeep-tuner
+    cd $cur_path/iadeep-tuner
     bash build_image.sh
     kubectl apply -f .
 fi
 
-cd ../iadeep-scheduler-extender
+cd $cur_path/iadeep-scheduler-extender
 bash build_image.sh
 cd config
 bash deploy-scheduler.sh
@@ -48,6 +51,6 @@ sleep 5
 #     ssh -T wychen@$i < monitor_gpu.sh & 
 # done
 
-submit jobs
-cd ../microsoft-job-generator
+# submit jobs
+cd $cur_path/microsoft-job-generator
 python3 submit_tasks.py --jobs=300
