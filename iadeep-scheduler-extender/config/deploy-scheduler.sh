@@ -8,4 +8,5 @@ kubectl delete -f iadeep-schd-extender.yaml
 sudo cp ./iadeep-scheduler-policy-config.yaml /etc/kubernetes/
 sudo cp ./iadeep-scheduler.yaml /etc/kubernetes/manifests/
 kubectl create -f iadeep-schd-extender.yaml
+sudo cp ./kube-scheduler-k8s.yaml /etc/kubernetes/manifests/kube-scheduler.yaml
 sudo systemctl restart kubelet
