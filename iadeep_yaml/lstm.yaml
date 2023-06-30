@@ -30,7 +30,7 @@ spec:
       volumeMounts:
       - name: datapath
         mountPath: /workspace/dataset/
-        readOnly: True
+        readOnly: False
       - name: logpath   
         mountPath: /workspace/workloads/result/
         readOnly: False
