@@ -147,7 +147,7 @@ if __name__ == "__main__":
     test_dataset = data_utils.NCFData(
             test_data, item_num, train_mat, 0, False)
     train_loader = DataLoader(train_dataset, **kwargs)
-    test_loader = DataLoader(test_dataset, **kwargs)
+    test_loader = DataLoader(test_dataset, batch_size=test_num_ng+1, shuffle=False, num_workers=0)
 
     if config.model == 'NeuMF-pre':
         assert os.path.exists(config.GMF_model_path), 'lack of GMF model'

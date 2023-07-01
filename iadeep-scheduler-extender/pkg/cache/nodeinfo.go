@@ -561,6 +561,9 @@ func (n *NodeInfo) allocateGPUID(clientset *kubernetes.Clientset, pod *v1.Pod) (
 				var jobs []string
 				availableGPU, ok := availableGPUs[devID]
 				pods := n.Devs[devID].PodMap
+				if len(pods) == 0 {
+					methods.PutPodContentByEtcd(n.Name + "/" + strconv.Itoa(DevId), "")
+				}
 				gpuUtil := gpustatus[devID].GpuUtil
 				memUtil := gpustatus[devID].MemUtil
 				// process := gpustatus[devID].Process
