@@ -105,7 +105,7 @@ spec:
       serviceAccount: gpushare-schd-extender
       containers:
         - name: gpushare-schd-extender
-          image: 10.119.46.41:30003/library/gpushare-scheduler-extender:1.0
+          image: www.myharbor.com/library/gpushare-scheduler-extender:1.0
           imagePullPolicy: Always
           env:
           - name: LOG_LEVEL

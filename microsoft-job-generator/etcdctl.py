@@ -1,10 +1,10 @@
 import etcd3
 import os
 
-os.environ["ETCD_SERVER_IP"] = "10.119.46.42"
+os.environ["ETCD_SERVER_IP"] = "10.140.83.244"
 os.environ["ETCD_PORT"] = "2379"
 
-ROOT_PATH = "/home/wychen/workspace/sc23/IADeep/"
+ROOT_PATH = "./"
 
 class ETCD_WRAPER:
     def __init__(self):

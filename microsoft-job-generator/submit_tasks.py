@@ -55,7 +55,7 @@ if __name__ == "__main__":
         cum += p
     task_cdf = dict(zip(tasks, cdf))
     # Get and modify task submission rate
-    init_rate = pd.read_csv("microsoft_trace_task_rate.csv", nrows=jobs)
+    init_rate = pd.read_csv(f"{ROOT_PATH}/microsoft-job-generator/microsoft_trace_task_rate.csv", nrows=jobs)
     submit_times = init_rate["modified_time"].tolist()
     prev_submit_time, submit_intervals = 0, []
     for submit_time in submit_times:

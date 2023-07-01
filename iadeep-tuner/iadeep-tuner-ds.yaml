@@ -19,7 +19,7 @@ spec:
       hostNetwork: true   
       containers:
       - name: iadeep-tuner
-        image: 10.119.46.41:30003/library/iadeep-tuner:1.0
+        image: www.myharbor.com/library/iadeep-tuner:1.0
         imagePullPolicy: Always 
         workingDir: /workspace
         command:

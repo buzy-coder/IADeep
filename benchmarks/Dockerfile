@@ -18,6 +18,6 @@ COPY workloads /workspace/workloads/
 COPY etcd_key /workspace/etcd_key/
 # Let bert can print to kubectl logs
 ENV PYTHONUNBUFFERED=1
-ENV ETCD_SERVER_IP="10.119.46.42"
+ENV ETCD_SERVER_IP="10.140.83.244"
 ENV ETCD_PORT=2379
 ENV LOG_LEVEL=DEBUG

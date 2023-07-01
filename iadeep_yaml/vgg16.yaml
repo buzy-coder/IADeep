@@ -8,7 +8,7 @@ metadata:
 spec:
   containers:
     - name: share-gpu-vgg16
-      image: 10.119.46.41:30003/library/iadeep_benchmarks:1.0
+      image: www.myharbor.com/library/iadeep_benchmarks:1.0
       imagePullPolicy: Always
       env:
         - name: POD_NAME

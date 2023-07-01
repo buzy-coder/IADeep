@@ -1,2 +1,2 @@
-docker build -t 10.119.46.41:30003/library/iadeep-tuner:1.0 .
-docker push 10.119.46.41:30003/library/iadeep-tuner:1.0
+docker build -t www.myharbor.com/library/iadeep-tuner:1.0 .
+docker push www.myharbor.com/library/iadeep-tuner:1.0

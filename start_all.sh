@@ -17,7 +17,9 @@ bash del-etcd.sh
 cur_path="$PWD"
 echo "current path is: " $cur_path
 # Description: start all components of IADeep
-cd iadeep-device-plugin
+cd $cur_path/benchmarks
+bash build_image.sh
+cd $cur_path/iadeep-device-plugin
 bash build_image.sh
 sleep 10
 kubectl apply -f .
@@ -35,7 +37,7 @@ fi
 
 cd $cur_path/iadeep-scheduler-extender
 bash build_image.sh
-cd config
+cd $cur_path/iadeep-scheduler-extender/config
 bash deploy-scheduler.sh
 
 sleep 5
@@ -52,5 +54,6 @@ sleep 5
 # done
 
 # submit jobs
-cd $cur_path/microsoft-job-generator
-python3 submit_tasks.py --jobs=300
+# cd $cur_path/microsoft-job-generator
+cd $cur_path
+python3 microsoft-job-generator/submit_tasks.py --jobs=300

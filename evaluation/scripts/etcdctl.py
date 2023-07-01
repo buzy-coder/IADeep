@@ -1,7 +1,7 @@
 import etcd3
 import os
 
-os.environ["ETCD_SERVER_IP"] = "10.119.46.42"
+os.environ["ETCD_SERVER_IP"] = "10.140.83.244"
 os.environ["ETCD_PORT"] = "2379"
 
 class ETCD_WRAPER:

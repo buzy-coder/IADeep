@@ -23,7 +23,7 @@ spec:
       nodeSelector:
         gpushare: "true"
       containers:
-      - image: 10.119.46.41:30003/library/gpushare-device-plugin:1.0
+      - image: www.myharbor.com/library/gpushare-device-plugin:1.0
         imagePullPolicy: Always
         name: gpushare
         # Make this pod as Guaranteed pod which will never be evicted because of node's resource consumption.

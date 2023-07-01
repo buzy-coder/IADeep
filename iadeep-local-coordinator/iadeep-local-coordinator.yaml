@@ -20,7 +20,7 @@ spec:
       hostNetwork: true   
       containers:
       - name: iadeep-local-coordinator
-        image: 10.119.46.41:30003/library/iadeep-local-coordinator:1.0
+        image: www.myharbor.com/library/iadeep-local-coordinator:1.0
         imagePullPolicy: Always
         command: ["iadeep_local_coordinator"]
         args: [] 
