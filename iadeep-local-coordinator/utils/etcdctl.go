@@ -119,7 +119,8 @@ func WatchKeyFromEtcd(first_key, second_key string) (string, error) {
 	// Process still stuck here sometime, cannot reproduce the bug
 	// try to solve this problem by adding a timeout to watch function
 	for {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		// ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		ctx, cancel := context.WithCancel(context.Background())
 		rch := client.Watch(ctx, second_key)
 		defer cancel()
 		select {
@@ -129,6 +130,7 @@ func WatchKeyFromEtcd(first_key, second_key string) (string, error) {
 		case res := <-rch:
 			for _, ev := range res.Events {
 				log.Printf("%s %q :%q\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+				log.Printf("ev.Type == clientv3.EventTypePut: %+v", ev.Type == clientv3.EventTypePut)
 				if ev.Type == clientv3.EventTypePut {
 					return string(ev.Kv.Value), nil
 				}

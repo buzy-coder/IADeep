@@ -266,8 +266,7 @@ type OnlineInterference struct {
 }
 
 func (n *NodeInfo) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod) (err error) {
-	start_time := time.Now().UnixMilli()
-
+	schedule_start_time := time.Now().UnixMilli()
 	log.Printf("Updated node labels Tuning: %v", n.Node.Labels)
 	n.Rwmu.Lock()
 	log.Printf("trace: NodeRWLocker: %v Allocate() RLocked", n.Name)
@@ -309,6 +308,17 @@ func (n *NodeInfo) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod) (err e
 			return err
 		}
 	}
+	// record scheduling time
+	schedule_end_time := time.Now().UnixMilli()
+	schedule_time := strconv.Itoa(int(schedule_end_time - schedule_start_time))
+	if err == nil {
+		_, err = methods.PutPodContentByEtcd(newPod.Name, "schedule_time", schedule_time)
+		if err != nil {
+			log.Printf("Put pod %v schedule_time in etcd err due to %+v", newPod.Name, err)
+		}
+	}
+	log.Printf("schedule_time is: %+v", schedule_time)
+	// record end!
 	// 4. send data to tuner
 	if err == nil && os.Getenv("SCHEDULER") == "IADEEP" {
 		log.Printf("Using scheduler IADeep")
@@ -418,17 +428,6 @@ func (n *NodeInfo) Allocate(clientset *kubernetes.Clientset, pod *v1.Pod) (err e
 
 	}
 	log.Printf("info: Allocate() ----End to allocate GPU for gpu mem for pod %s in ns %s----", pod.Name, pod.Namespace)
-	// record scheduling time
-	end_time := time.Now().UnixMilli()
-	schedule_time := strconv.Itoa(int(end_time - start_time))
-	if err == nil {
-		_, err = methods.PutPodContentByEtcd(newPod.Name, "schedule_time", schedule_time)
-		if err != nil {
-			log.Printf("Put pod %v schedule_time in etcd err due to %+v", newPod.Name, err)
-		}
-	}
-	log.Printf("schedule_time is: %+v", schedule_time)
-	// record end!
 	return err
 }
 

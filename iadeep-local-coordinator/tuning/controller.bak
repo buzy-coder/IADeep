@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -66,7 +67,6 @@ type ReqData struct {
 type RespResult struct {
 	Err    string `json:"err"`
 	Result []int  `json:"result"`
-	Round int `json:"round"`
 }
 
 func NewTuningController(clientset *kubernetes.Clientset, tuningQueue workqueue.RateLimitingInterface, stopCh <-chan struct{}) (*TuningController, error) {
@@ -182,9 +182,9 @@ func TuningBatchsizes(tuningPods *utils.TuningPods, nodeName string, tuningQueue
 	// If GPU already has tuned pods, only tuning new coming
 	// pods instead of tuning all pods on that GPU.
 	// Here I use the length of pod_names to detect if there are any tuned pods
-	has_tuned_pods := len(pod_names) >= 2
-	pod_name := pod_names[len(pod_names)-1]
+	has_tuned_pods := len(pod_names) > 2
 	if has_tuned_pods {
+		pod_name := pod_names[len(pod_names)-1]
 		log.Printf("trace: Device %v/%v alread has tuned pods, tuning process will only perform on pod %v", nodeName, devId, pod_name)
 		job_name := strings.Split(pod_name, "-")[0]
 		ok, job_info := GetJobInfo(job_name)
@@ -193,38 +193,13 @@ func TuningBatchsizes(tuningPods *utils.TuningPods, nodeName string, tuningQueue
 			return false, nil
 		}
 		job_info.Pod_name = pod_name
+		batch_pd := GetBothPDFromEtcd([]JobInfo{}, *job_info)
+
+		Batchsize_info = append(Batchsize_info, batch_pd[0].Batchsize)
+		PD_info = append(PD_info, batch_pd[0].PD)
 		job_names = append(job_names, job_name)
+		pod_names = append(pod_names, pod_name)
 		init_batchsizes = append(init_batchsizes, job_info.Best_batchsize)
-		for i := 0; i < 5; i++ {
-			utils.PutContentToEtcd(pod_name, "tuning", "1")
-			sample_batchsize := job_info.Best_batchsize + (i-3)*16
-			utils.PutContentToEtcd(pod_name, "tuned_batch_size", strconv.Itoa(sample_batchsize))
-			log.Printf("the %+v th sample batchsize is %v", i, sample_batchsize)
-			if i == 0 {
-				pd_str, err := utils.GetContentFromEtcd(pod_name, "pd")
-				log.Printf("pd_str is %v", pd_str)
-				if pd_str == "" {
-					pd_str, err = utils.WatchKeyFromEtcd(pod_name, "pd")
-					if err != nil {
-						log.Printf("error: Watch %v/pd from etcd failed due to %v", pod_name, err)
-						return false, err
-					}
-				}
-				pd_float, _ := strconv.ParseFloat(pd_str, 64)	
-				PD_info = append(PD_info, pd_float)
-			} else {
-				pd_str, err := utils.WatchKeyFromEtcd(pod_name, "pd")
-				log.Printf("pd_str is %v", pd_str)
-				if err != nil {
-					log.Printf("error: Read %v/%v from etcd failed due to %v", pod_name, pd_str, err)
-					return false, err
-				}
-				pd_float, _ := strconv.ParseFloat(pd_str, 64)
-				PD_info = append(PD_info, pd_float)
-			}
-			Batchsize_info = append(Batchsize_info, sample_batchsize)
-			utils.PutContentToEtcd(pod_name, "tuning", "-1")
-		}
 	} else {
 		log.Printf("trace: Device %v/%v doesn't have tuned pods, tuning process will perform on pods %v", nodeName, devId, pod_names)
 		var base_job_batchs []JobInfo
@@ -274,15 +249,35 @@ func TuningBatchsizes(tuningPods *utils.TuningPods, nodeName string, tuningQueue
 		PD_info:         PD_info,
 	}
 	log.Printf("debug: send to ucb-server reqdata is %+v", resdata)
-	tuned_batchsizes, search_round := SendTuneRequest(resdata) 
-	log.Printf("debug: tuned_batchsizes are: %+v, search_round is: %+v", tuned_batchsizes, search_round)
+	tuned_batchsizes := SendTuneRequest(resdata) //数组
+	log.Printf("debug: tuned_batchsizes are: %+v", tuned_batchsizes)
+	if reflect.DeepEqual(tuningPods.Batchsizes, tuned_batchsizes) {
+		tuningPods.Count += 1
+		log.Printf("debug: tuningPods.Count is: %+v", tuningPods.Count)
+	} else {
+		tuningPods.Batchsizes = tuned_batchsizes
+		tuningPods.Count = 1
+		log.Printf("debug: tuningPods.Count is: %+v", tuningPods.Count)
+		log.Printf("debug: tuningPods.Batchsizes is: %+v", tuningPods.Batchsizes)
+	}
 
-	utils.PutContentToEtcd(pod_name, "tuned_batch_size", strconv.Itoa(tuned_batchsizes[0]))
-	utils.PutContentToEtcd(pod_name, "search_round", strconv.Itoa(search_round))
-
-	log.Printf("info: Tuning finished! Current pods on %v/%v are %v", nodeName, devId, pod_names)
-	// modify tuning tag to false
-	utils.DeleteContentFromEtcd(nodeName, strconv.Itoa(tuningPods.DevId))
+	if len(pod_names) > 0 && len(tuned_batchsizes) > 0 && tuned_batchsizes[0] > 0 && tuningPods.Count < 5 {
+		log.Printf("info: edit etcd.")
+		if has_tuned_pods {
+			pod_names = pod_names[len(pod_names)-1:]
+		}
+		for i, pod_name := range pod_names {
+			utils.PutContentToEtcd(pod_name, "tuning", "1")
+			batch_sizes_str := strconv.Itoa(tuned_batchsizes[i])
+			utils.PutContentToEtcd(pod_name, "tuned_batch_size", batch_sizes_str)
+		}
+		log.Printf("info: tuned batch size")
+		tuningQueue.Add(tuningPods)
+	} else {
+		log.Printf("info: Tuning finished! Current pods on %v/%v are %v", nodeName, devId, pod_names)
+		// modify tuning tag to false
+		utils.DeleteContentFromEtcd(nodeName, strconv.Itoa(tuningPods.DevId))
+	}
 	return true, nil
 }
 
@@ -479,7 +474,7 @@ func GetGPUCountInNode(node *v1.Node) int {
 	return int(val.Value())
 }
 
-func SendTuneRequest(reqdata ReqData) ([]int, int) {
+func SendTuneRequest(reqdata ReqData) []int {
 	var res []int = []int{0, 0}
 
 	bytesData, err := json.Marshal(reqdata)
@@ -503,7 +498,7 @@ func SendTuneRequest(reqdata ReqData) ([]int, int) {
 	log.Printf("SendTuneRequest response is %+v", response)
 	if err != nil {
 		log.Printf("Failed to get response from client due to %v", err.Error())
-		return res, 0
+		return res
 	}
 	defer request.Body.Close()
 	log.Println("response Status:", response.Status)
@@ -513,7 +508,7 @@ func SendTuneRequest(reqdata ReqData) ([]int, int) {
 
 	if err != nil {
 		log.Printf("Failed to convert response to respBytes from client due to %v", err.Error())
-		return res, 0
+		return res
 	}
 
 	respResult := RespResult{}
@@ -523,5 +518,5 @@ func SendTuneRequest(reqdata ReqData) ([]int, int) {
 	}
 	end_req := time.Now().Unix()
 	log.Printf("SendTuneRequest request time is %+v", end_req-start_req)
-	return respResult.Result, respResult.Round
+	return respResult.Result
 }

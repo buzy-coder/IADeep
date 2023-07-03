@@ -66,12 +66,14 @@ def train_vgg16(args, model, device, train_loader, test_loader, optimizer, kwarg
     count = 0
     recorder = utils.TrainRecorder(args.pod_name, optimizer)
     train_success = False
+    global cur_batch_size
     for epoch in range(1, args.epochs + 1):
         tuned_batch_size = etcd_wraper.get(args.pod_name, "tuned_batch_size")
-        if tuned_batch_size is not None and tuned_batch_size != args.batch_size:
+        if tuned_batch_size is not None and utils.check_if_tuning(args.pod_name) and tuned_batch_size != cur_batch_size: 
             kwargs.update({"batch_size": tuned_batch_size})
             logging.info(f"Epoch {epoch} kwargs are: {kwargs}")
             train_loader = DataLoader(train_dataset, **kwargs)
+            cur_batch_size = tuned_batch_size
 
         train(args, model, device, train_loader, optimizer, epoch, recorder)
         accuracy = test(model, device, test_loader)
@@ -122,6 +124,7 @@ if __name__ == "__main__":
     logging.debug("device is: %s", str(device))
 
     kwargs = {'batch_size': args.batch_size}
+    cur_batch_size = args.batch_size
     if use_cuda:
         kwargs.update({'num_workers': 1,
                        'pin_memory': False,

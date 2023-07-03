@@ -146,13 +146,15 @@ def run(args, model, device, dataloader, optimizer, kwargs):
     count = 0
     recorder = utils.TrainRecorder(args.pod_name, optimizer)
     train_success = False
+    global cur_batch_size
     for epoch in range(1, args.epochs + 1):
         
         tuned_batch_size = etcd_wraper.get(args.pod_name, "tuned_batch_size")
-        if tuned_batch_size is not None and tuned_batch_size != args.batch_size:
+        if tuned_batch_size is not None and utils.check_if_tuning(args.pod_name) and tuned_batch_size != args.batch_size:
             kwargs.update({"batch_size": tuned_batch_size}, )
             logging.debug(f"Epoch {epoch} kwargs are: {kwargs}")
             dataloader = DataLoader(dataset, **kwargs)
+            cur_batch_size = tuned_batch_size
 
         model_loss_all = 0
         view_loss_all = 0
@@ -326,7 +328,7 @@ if __name__ == "__main__":
 
 
     args = parser.parse_args()
-    init_batchsize = args.batch_size
+    cur_batch_size = args.batch_size
     pod_name = args.pod_name
     trained_count = args.trained_count
     mini_batch_steps = 5 if args.mini_batch_steps >= 1 else args.mini_batch_steps

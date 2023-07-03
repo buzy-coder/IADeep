@@ -101,7 +101,7 @@ class TrainRecorder:
             bool: Should current epoch continue? True -> keep on going, False -> break the epoch
         """        
         minibatch_time = minibatch_time_end - minibatch_time_start
-        if check_if_tuning(self.pod_name):
+        if check_if_tuning(self.pod_name) and len(self.minibatch_times) <= COUNT_SAMPLE:
             logging.debug("tuning!")
             self.minibatch_times.append(minibatch_time)
             if len(self.minibatch_times) == 1: 

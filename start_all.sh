@@ -40,7 +40,7 @@ bash build_image.sh
 cd $cur_path/iadeep-scheduler-extender/config
 bash deploy-scheduler.sh
 
-sleep 5
+sleep 15
 
 # monitor GPU on each worker node
 # cd ../
