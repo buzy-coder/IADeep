@@ -17,7 +17,7 @@ def extract_results_from_etcd(file_path, client):
         schedule_time = client.get(pod_name, "schedule_time")
         tuning_time = client.get(pod_name, "tuning_time")
         tuning_time = tuning_time if tuning_time is not None else 0
-        search_round = client.get(pod_name, "search_rounds")
+        search_round = client.get(pod_name, "search_round")
         search_round = search_round if search_round is not None else 0
 
         df.loc[df["pod_name"] == pod_name, "start_time"] = start_time
@@ -25,7 +25,7 @@ def extract_results_from_etcd(file_path, client):
         df.loc[df["pod_name"] == pod_name, "jct"] = end_time - submit_time
         df.loc[df["pod_name"] == pod_name, "search_rounds"] = search_round
         df.loc[df["pod_name"] == pod_name, "schedule_time"] = schedule_time 
-        
+
     df.to_csv(file_path, index=False)
 
 
