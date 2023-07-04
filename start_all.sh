@@ -56,4 +56,4 @@ sleep 15
 # submit jobs
 # cd $cur_path/microsoft-job-generator
 cd $cur_path
-python3 microsoft-job-generator/submit_tasks.py --jobs=300
+python3 microsoft-job-generator/submit_tasks.py --jobs=300 --scheduler=$scheduler

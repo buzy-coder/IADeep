@@ -73,11 +73,6 @@ func main() {
 
 	initKubeClient()
 	methods.DeleteAllPodStatusContentByEtcd()
-	// delete content for devId 1 of node cc232
-	methods.DeletePodContentByEtcd("cc232", "1")
-	methods.DeletePodContentByEtcd("vgg16-01", "")
-	methods.DeletePodContentByEtcd("vgg16-02", "")
-	methods.DeletePodContentByEtcd("squeezenet", "")
 
 	port := os.Getenv("PORT")
 	if _, err := strconv.Atoi(port); err != nil {

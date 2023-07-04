@@ -578,6 +578,7 @@ func (n *NodeInfo) allocateGPUID(clientset *kubernetes.Clientset, pod *v1.Pod) (
 						if candidateDevID == -1 || candidateGPUMemory > availableGPU {
 							if os.Getenv("SCHEDULER") == "ANTMAN" {
 								log.Printf("return devID %d on node %s", devID, n.Name)
+								candidateGPUMemory = availableGPU
 								return devID, true
 							} else {
 								if memCapacity-memUsed == memCapacity { //return idle GPU

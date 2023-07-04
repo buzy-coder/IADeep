@@ -22,7 +22,7 @@ func NewGPUsharePrioritize(clientset *kubernetes.Clientset, c *cache.SchedulerCa
 			node, _ := c.GetNode(nodeName)
 			sumGPUMemUtil := 0
 			GPUs := utils.GetGPUStatusInNode(node)
-			var score int
+			score := 0
 			if os.Getenv("SCHEDULER") == "IADEEP" {
 				hasNonTuningGPU := false
 				for idx, status := range GPUs {
@@ -39,6 +39,12 @@ func NewGPUsharePrioritize(clientset *kubernetes.Clientset, c *cache.SchedulerCa
 					score = 100 - avgGPUMemUtil
 				} else {
 					score = 0
+				}
+			} else if os.Getenv("SCHEDULER") == "ANTMAN" {
+				log.Printf("debug: using Antman scheduler")
+				for idx, status := range GPUs {
+					log.Printf("debug: %v GPU %v used %v", nodeName, idx, status.MemUsed)
+					score += 10 + int(status.MemUsed)
 				}
 			} else {
 				for _, status := range GPUs {
