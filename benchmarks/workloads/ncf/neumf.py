@@ -1,4 +1,4 @@
-import os, logging
+import os, logging, random
 import time
 import argparse
 import numpy as np
@@ -126,14 +126,17 @@ if __name__ == "__main__":
                         help='earlystopping patience to achieve valid_acc')
 
     args = parser.parse_args()
-    cur_batch_size = args.batch_size
     pod_name = args.pod_name
 
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
     logging.debug("device is: %s", str(device))
-
-    kwargs = {'batch_size': args.batch_size}
+    if os.environ.get("SCHEDULER") == "IADEEP":
+        cur_batch_size = args.batch_size
+    else:
+        cur_batch_size = random.randrange(256, 1024, 2)
+    logging.info(f"cur_batch_size is: {cur_batch_size}")     
+    kwargs = {'batch_size': cur_batch_size}    
     if use_cuda:
         kwargs.update({'num_workers': 0,
                        'pin_memory': False,

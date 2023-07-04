@@ -1,7 +1,8 @@
-import time
+import os, time, random
 import argparse
 import logging
 import torch
+import numpy as np
 from torch import optim
 from torch.utils.data import DataLoader
 from torchvision import transforms, datasets, models
@@ -123,8 +124,12 @@ if __name__ == "__main__":
     device = torch.device("cuda" if use_cuda else "cpu")
     logging.debug("device is: %s", str(device))
 
-    kwargs = {'batch_size': args.batch_size}
-    cur_batch_size = args.batch_size
+    if os.environ.get("SCHEDULER") == "IADEEP":
+        cur_batch_size = args.batch_size
+    else:
+        cur_batch_size = np.random.randrange(256, 1024, 2)
+    logging.info(f"cur_batch_size is: {cur_batch_size}")    
+    kwargs = {'batch_size': cur_batch_size}
     if use_cuda:
         kwargs.update({'num_workers': 1,
                        'pin_memory': False,

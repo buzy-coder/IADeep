@@ -3,6 +3,7 @@ scheduler=$1
 if [ "$scheduler" != "" ]; then
     echo "Using ${scheduler} scheduler"
     sed -i "s/ENV SCHEDULER=.*/ENV SCHEDULER=${scheduler}/" $(pwd)/iadeep-scheduler-extender/Dockerfile
+    sed -i "s/ENV SCHEDULER=.*/ENV SCHEDULER=${scheduler}/" $(pwd)/benchmarks/Dockerfile
 fi
 
 kubectl delete pods --all -n iadeep

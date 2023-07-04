@@ -1,5 +1,5 @@
 #coding=utf-8
-import re, math, time, logging, argparse, torch
+import re, math, time, logging, argparse, torch, random, os
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
@@ -194,8 +194,12 @@ if __name__ == "__main__":
     device = torch.device("cuda")
     logging.debug("device is: %s", str(device))
 
-    kwargs = {'batch_size': args.batch_size, 'shuffle': True}
-    cur_batch_size = args.batch_size
+    if os.environ.get("SCHEDULER") == "IADEEP":
+        cur_batch_size = args.batch_size
+    else:
+        cur_batch_size = random.randrange(128, 512, 2)
+    logging.info(f"cur_batch_size is: {cur_batch_size}") 
+    kwargs = {'batch_size': cur_batch_size, 'shuffle': True}
 
     # num_workers': 0,
     # Tokenizer for splitting texts.
