@@ -127,7 +127,7 @@ if __name__ == "__main__":
     if os.environ.get("SCHEDULER") == "IADEEP":
         cur_batch_size = args.batch_size
     else:
-        cur_batch_size = np.random.randrange(128, 512, 2)
+        cur_batch_size = random.randint(128, 512)
     logging.info(f"cur_batch_size is: {cur_batch_size}")    
     kwargs = {'batch_size': cur_batch_size}
     if use_cuda:

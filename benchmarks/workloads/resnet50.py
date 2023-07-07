@@ -125,8 +125,10 @@ if __name__ == "__main__":
 
     if os.environ.get("SCHEDULER") == "IADEEP":
         cur_batch_size = args.batch_size
+        model = models.resnet50(pretrained=True)
     else:
-        cur_batch_size = random.randrange(128, 512, 2)
+        cur_batch_size = random.randint(512, 1024)
+        model = models.resnet50(pretrained=False)
     logging.info(f"cur_batch_size is: {cur_batch_size}")     
     kwargs = {'batch_size': cur_batch_size}    
     if use_cuda:
@@ -143,7 +145,6 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_dataset, **kwargs)
     test_loader = DataLoader(test_dataset, **kwargs)
 
-    model = models.resnet50(pretrained=True)
     # model.load_state_dict(torch.load('/workspace/cache/resnet50.pth'))
     model = model.to(device)
 
