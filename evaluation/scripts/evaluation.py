@@ -9,12 +9,12 @@ sns.set(font_scale=1.1, style="white")
 
 
 # plot CT and makespan in bar with baselines (Antman, MPS, Kernel. Est)(Fig. 7a)
-def plot_ct_and_makespan(iadeep_path, antman_path, mps_path, kernel_est_df):
+def plot_ct_and_makespan(iadeep_path, antman_path, mps_path, kernel_est_path):
     # Load results
     iadeep_df = pd.read_csv(iadeep_path)
     antman_df = pd.read_csv(antman_path)
     mps_df = pd.read_csv(mps_path)
-    kernel_est_df = pd.read_csv(kernel_est_df)
+    kernel_est_df = pd.read_csv(kernel_est_path)
 
     iadeep_ct = iadeep_df["jct"].mean()
     antman_ct = antman_df["jct"].mean()
@@ -91,14 +91,15 @@ def plot_ct_cdf(iadeep_path, antman_path, mps_path, kernel_est_path):
 
     fig = plt.figure(figsize=(3,2.3), dpi=120)
     ax = fig.add_subplot(111)
-    ax.plot(antman_ct, antman_ct_cdf, label="Antman")
-    ax.plot(mps_ct, mps_ct_cdf, label="MPS")
-    ax.plot(kernel_est_ct, kernel_est_ct_cdf, label="Kernel Est.")
-    ax.plot(iadeep_ct, iadeep_ct_cdf, label="IADeep")
+    ax.plot(antman_ct/3600, antman_ct_cdf, label="Antman")
+    ax.plot(mps_ct/3600, mps_ct_cdf, label="MPS")
+    ax.plot(kernel_est_ct/3600, kernel_est_ct_cdf, label="Kernel Est.")
+    ax.plot(iadeep_ct/3600, iadeep_ct_cdf, label="IADeep")
     ax.set_xlabel("Norm. CT")
     ax.set_ylabel("CDF")
-    ax.set_xlim(0, 100)
-    ax.set_ylim(0, 1.05)
+    # ax.set_xlim(0, 100)
+    # ax.set_ylim(0, 1.05)
+    ax.grid(linestyle='-.', linewidth=0.5, alpha=0.5)
     ax.legend(loc="best", ncol=1, handlelength=1.6, handletextpad=0.5, columnspacing=0.6)
     plt.tight_layout(pad=0.0, h_pad=0, w_pad=0, rect=None)
     plt.savefig('../pdf/jct_cdf.pdf')
@@ -240,20 +241,24 @@ if __name__ == "__main__":
     antman_dir = "../data/antman/"
     mps_dir = "../data/mps/"
     kernel_est_dir = "../data/kernel_est/"
-    iadeep_path = "../data/iadeep/iadeep_1.csv"
-    iadeep_util_path = "../data/iadeep/iadeep_util.csv"
-    antman_util_path = "../data/antman/antman_util.csv"
-    mps_util_path = "../data/mps/mps_util.csv"
-    kernel_est_util_path = "../data/kernel_est/kernel_est_util.csv"
+    dataset_dir = "../dataset/"
+    iadeep_path = f"{dataset_dir}/IADeep_1.0_2023-07-03-05_56_14.csv"
+    antman_path = f"{dataset_dir}/ANTMAN_1.0_2023-07-06-01_57_52.csv"
+    mps_path = f"{dataset_dir}/ANTMAN_1.0_2023-07-06-01_57_52.csv"
+    kernel_est_path = f"{dataset_dir}/ANTMAN_1.0_2023-07-06-01_57_52.csv"
+    iadeep_util_path = f"{dataset_dir}/iadeep_util.csv"
+    antman_util_path = f"{dataset_dir}/antman_util.csv"
+    mps_util_path = f"{dataset_dir}/mps_util.csv"
+    kernel_est_util_path = f"{dataset_dir}/kernel_est_util.csv"
    
     parser = argparse.ArgumentParser()
     parser.add_argument("--fig", type=str, default="all", help="The path to save the results")
     args = parser.parse_args()
 
     if args.fig == "7a":
-        plot_ct_and_makespan(iadeep_path)
+        plot_ct_and_makespan(iadeep_path, antman_path, mps_path, kernel_est_path)
     elif args.fig == "7b":
-        plot_ct_cdf(iadeep_path)
+        plot_ct_cdf(iadeep_path, antman_path, mps_path, kernel_est_path)
     elif args.fig == "8":
         plot_sm_mem_util(iadeep_util_path, antman_util_path, mps_util_path, kernel_est_util_path)        
     elif args.fig == "10a":
