@@ -210,13 +210,17 @@ def plot_search_rounds_cdf(iadeep_path):
 
     iadeep_df = pd.read_csv(iadeep_path)
     iadeep_rounds = iadeep_df["search_rounds"].values
+    iadeep_rounds = iadeep_rounds[iadeep_rounds != 0]
 
     # plot CDF of search rounds
     fig = plt.figure(figsize=(3,2.3), dpi=120)
     ax = fig.add_subplot(111)
-    ax.hist(iadeep_rounds, bins=100, density=True, cumulative=True)
+    # ax.hist(iadeep_rounds, bins=100, density=True, cumulative=True)
+    n, bins, patches = ax.hist(iadeep_rounds, bins=100, density=True, cumulative=True, histtype='step', color='green')
     ax.set_xlabel("Rounds")
     ax.set_ylabel("CDF")
+    ax.set_xlim(min(bins), max(bins))
+    ax.grid(True, linestyle='--', linewidth=0.5)
     plt.tight_layout(pad=0.0, h_pad=0, w_pad=0, rect=None)
     plt.savefig('../pdf/search_rounds_cdf.pdf')
 
@@ -225,13 +229,16 @@ def plot_search_rounds_cdf(iadeep_path):
 def plot_scheduling_cost(iadeep_path):
     scheduling_time = []
     iadeep_df = pd.read_csv(iadeep_path)
-    scheduling_time = iadeep_df["scheduling_time"].values
+    scheduling_time = iadeep_df["schedule_time"].values
 
     fig = plt.figure(figsize=(3,2.3), dpi=120)
     ax = fig.add_subplot(111)
-    ax.hist(scheduling_time, bins=100, density=True, cumulative=True)
+    # ax.hist(scheduling_time, bins=100, density=True, cumulative=True)
+    n, bins, patches = ax.hist(scheduling_time, bins=100, density=True, cumulative=True, histtype='step', color='green')
     ax.set_xlabel("Time (ms)")
     ax.set_ylabel("CDF")
+    ax.grid(True, linestyle='--', linewidth=0.5)
+    ax.set_xlim(0, max(bins))
     plt.tight_layout(pad=0.0, h_pad=0, w_pad=0, rect=None)
     plt.savefig('../pdf/scheduling_cost.pdf')
 
