@@ -63,7 +63,7 @@ def plot_ct_and_makespan(iadeep_path, antman_path, mps_path, kernel_est_path):
     ax.set_ylim(0, 3.5)
     ax.legend(loc="best", ncol=2, handlelength=1.6, handletextpad=0.5, columnspacing=0.6)
     plt.tight_layout(pad=0.0, h_pad=0, w_pad=0, rect=None)
-    plt.savefig('../pdf/jct_and_makespan.pdf')    
+    plt.savefig('../pdf/7a.pdf')    
 
 
 # plot CDF of CT (Fig. 7b)
@@ -102,7 +102,7 @@ def plot_ct_cdf(iadeep_path, antman_path, mps_path, kernel_est_path):
     ax.grid(linestyle='-.', linewidth=0.5, alpha=0.5)
     ax.legend(loc="best", ncol=1, handlelength=1.6, handletextpad=0.5, columnspacing=0.6)
     plt.tight_layout(pad=0.0, h_pad=0, w_pad=0, rect=None)
-    plt.savefig('../pdf/jct_cdf.pdf')
+    plt.savefig('../pdf/7b.pdf')
 
     
 # plot SM and Memory Utilization (Fig. 8)
@@ -222,7 +222,7 @@ def plot_search_rounds_cdf(iadeep_path):
     ax.set_xlim(min(bins), max(bins))
     ax.grid(True, linestyle='--', linewidth=0.5)
     plt.tight_layout(pad=0.0, h_pad=0, w_pad=0, rect=None)
-    plt.savefig('../pdf/search_rounds_cdf.pdf')
+    plt.savefig('../pdf/12a.pdf')
 
 
 # plot scheduling cost (Fig. 14b)
@@ -240,7 +240,7 @@ def plot_scheduling_cost(iadeep_path):
     ax.grid(True, linestyle='--', linewidth=0.5)
     ax.set_xlim(0, max(bins))
     plt.tight_layout(pad=0.0, h_pad=0, w_pad=0, rect=None)
-    plt.savefig('../pdf/scheduling_cost.pdf')
+    plt.savefig('../pdf/14b.pdf')
 
 
 if __name__ == "__main__":
