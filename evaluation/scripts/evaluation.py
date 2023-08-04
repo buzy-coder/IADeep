@@ -244,19 +244,11 @@ def plot_scheduling_cost(iadeep_path):
 
 
 if __name__ == "__main__":
-    iadeep_dir = "../data/iadeep/"
-    antman_dir = "../data/antman/"
-    mps_dir = "../data/mps/"
-    kernel_est_dir = "../data/kernel_est/"
     dataset_dir = "../dataset/"
-    iadeep_path = f"{dataset_dir}/IADeep_1.0_2023-07-03-05_56_14.csv"
-    antman_path = f"{dataset_dir}/ANTMAN_1.0_2023-07-06-01_57_52.csv"
-    mps_path = f"{dataset_dir}/ANTMAN_1.0_2023-07-06-01_57_52.csv"
-    kernel_est_path = f"{dataset_dir}/ANTMAN_1.0_2023-07-06-01_57_52.csv"
-    iadeep_util_path = f"{dataset_dir}/iadeep_util.csv"
-    antman_util_path = f"{dataset_dir}/antman_util.csv"
-    mps_util_path = f"{dataset_dir}/mps_util.csv"
-    kernel_est_util_path = f"{dataset_dir}/kernel_est_util.csv"
+    iadeep_path = f"{dataset_dir}/IADEEP.csv"
+    antman_path = f"{dataset_dir}/ANTMAN.csv"
+    kernel_est_path = f"{dataset_dir}/KERNELEST.csv"
+    mps_path = f"{dataset_dir}/MPS.csv"
    
     parser = argparse.ArgumentParser()
     parser.add_argument("--fig", type=str, default="all", help="The path to save the results")
@@ -266,21 +258,21 @@ if __name__ == "__main__":
         plot_ct_and_makespan(iadeep_path, antman_path, mps_path, kernel_est_path)
     elif args.fig == "7b":
         plot_ct_cdf(iadeep_path, antman_path, mps_path, kernel_est_path)
-    elif args.fig == "8":
-        plot_sm_mem_util(iadeep_util_path, antman_util_path, mps_util_path, kernel_est_util_path)        
-    elif args.fig == "10a":
-        plot_ct_various_arrival_rates(iadeep_dir, antman_dir, mps_dir, kernel_est_dir)
-    elif args.fig == "10b":
-        plot_makespan_various_arrival_rates(iadeep_dir, antman_dir, mps_dir, kernel_est_dir)
+    # elif args.fig == "8":
+        # plot_sm_mem_util(iadeep_util_path, antman_util_path, mps_util_path, kernel_est_util_path)        
+    # elif args.fig == "10a":
+        # plot_ct_various_arrival_rates(iadeep_dir, antman_dir, mps_dir, kernel_est_dir)
+    # elif args.fig == "10b":
+        # plot_makespan_various_arrival_rates(iadeep_dir, antman_dir, mps_dir, kernel_est_dir)
     elif args.fig == "12a":
         plot_search_rounds_cdf(iadeep_path)
     elif args.fig == "14b":
         plot_scheduling_cost(iadeep_path)
     elif args.fig == 'all':
-        plot_ct_and_makespan(iadeep_path)
-        plot_ct_cdf(iadeep_path)
-        plot_sm_mem_util(iadeep_util_path, antman_util_path, mps_util_path, kernel_est_util_path)
-        plot_ct_various_arrival_rates(iadeep_dir, antman_dir, mps_dir, kernel_est_dir)
-        plot_makespan_various_arrival_rates(iadeep_dir, antman_dir, mps_dir, kernel_est_dir)
+        plot_ct_and_makespan(iadeep_path, antman_path, mps_path, kernel_est_path)
+        plot_ct_cdf(iadeep_path, antman_path, mps_path, kernel_est_path)
+        # plot_sm_mem_util(iadeep_util_path, antman_util_path, mps_util_path, kernel_est_util_path)
+        # plot_ct_various_arrival_rates(iadeep_dir, antman_dir, mps_dir, kernel_est_dir)
+        # plot_makespan_various_arrival_rates(iadeep_dir, antman_dir, mps_dir, kernel_est_dir)
         plot_search_rounds_cdf(iadeep_path)
         plot_scheduling_cost(iadeep_path)    
